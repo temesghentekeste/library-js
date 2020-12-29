@@ -1,3 +1,11 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 body {
-  background-color: red;
+  background-image: linear-gradient(120deg, #696da3, #1f5397);
+  color: #fff;
+  font-family: 'Roboto', sans-serif;
 }
