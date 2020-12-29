@@ -35,6 +35,17 @@ function addBookToLibrary(e) {
 
   // New book item
 
+  // Add ID to bookRow: newBook
+   const books = getBooks();
+   console.log(books);
+   let id;
+   if (books.length > 0) {
+     id = books[books.length - 1].id + 1;
+   } else {
+     id = 1;
+   }
+   newBook.id = id;
+   bookRow.setAttribute("id", id);
   // Author column
   const newBookAuthor = document.createElement("td");
   newBookAuthor.innerText = newBook.author;
@@ -62,6 +73,8 @@ function addBookToLibrary(e) {
   deleteBook.classList.add("trash-btn");
   newBookActions.appendChild(deleteBook);
   bookRow.appendChild(newBookActions);
+
+  //  saveLocalTodos(todo);
 
   // Append the row back to tbody
   UITableBody.appendChild(bookRow);
@@ -100,6 +113,11 @@ UIBtnToggleForm.addEventListener('click', e => {
       console.log("Not trash btn");
       return;
     }
+ }
+
+ // Get books from library
+ function getBooks() {
+   return myLibrary;
  }
 
 
