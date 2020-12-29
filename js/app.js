@@ -1,17 +1,17 @@
-let myLibrary = [];
+let localStorageItem = "myBooksLibrary";
 let bookStatus = false;
-const UITextAuthour = document.querySelector('.txt-author');
-const UITextTitle = document.querySelector('.txt-title');
-const UINumPages = document.querySelector('.num-pages');
-const UIChKStatus = document.querySelector('.chk-status');
+const UITextAuthour = document.querySelector(".txt-author");
+const UITextTitle = document.querySelector(".txt-title");
+const UINumPages = document.querySelector(".num-pages");
+const UIChKStatus = document.querySelector(".chk-status");
 const UITableBody = document.querySelector(".table-body");
 const UIBtnAddBook = document.querySelector(".btn-add-book");
 const UIBtnToggleForm = document.querySelector(".btn-show-form");
 const UIFormContainer = document.querySelector(".form-popup");
 
-UIBtnAddBook.addEventListener('click', addBookToLibrary);
+UIBtnAddBook.addEventListener("click", addBookToLibrary);
 UIChKStatus.addEventListener("change", getStatus);
-UITableBody.addEventListener('click', deleteEdit);
+UITableBody.addEventListener("click", deleteEdit);
 
 function Book(author, title, pages, status) {
   this.author = author;
@@ -36,16 +36,16 @@ function addBookToLibrary(e) {
   // New book item
 
   // Add ID to bookRow: newBook
-   const books = getBooks();
-   console.log(books);
-   let id;
-   if (books.length > 0) {
-     id = books[books.length - 1].id + 1;
-   } else {
-     id = 1;
-   }
-   newBook.id = id;
-   bookRow.setAttribute("id", id);
+  const books = getBooks();
+  console.log(books);
+  let id;
+  if (books.length > 0) {
+    id = books[books.length - 1].id + 1;
+  } else {
+    id = 1;
+  }
+  newBook.id = id;
+  bookRow.setAttribute("id", id);
   // Author column
   const newBookAuthor = document.createElement("td");
   newBookAuthor.innerText = newBook.author;
@@ -77,49 +77,59 @@ function addBookToLibrary(e) {
   //  saveLocalTodos(todo);
 
   // Append the row back to tbody
+  saveLocalTodos(newBook);
   UITableBody.appendChild(bookRow);
 }
 
+UIBtnToggleForm.addEventListener("click", (e) => {
+  UIFormContainer.classList.toggle("hidden");
+});
 
-UIBtnToggleForm.addEventListener('click', e => {
-  UIFormContainer.classList.toggle('hidden');
-})
+function getStatus(event) {
+  if (event.target.checked) {
+    bookStatus = true;
+    console.log(event.target.value, bookStatus);
+  } else {
+    bookStatus = false;
+    console.log(event.target.value, bookStatus);
+  }
 
- function getStatus(event) {
-   if (event.target.checked) {
-     bookStatus = true;
-     console.log(event.target.value, bookStatus);
-    }else {
-      bookStatus =false;
-      console.log(event.target.value, bookStatus);
-   }
+  return bookStatus;
+}
 
-   return bookStatus;
- }
+// Function to delete or edit
+function deleteEdit(e) {
+  const selectedItem = e.target;
+  const bookRow = selectedItem.parentElement.parentElement;
 
- // Function to delete or edit
- function deleteEdit(e) {
-    const selectedItem = e.target;
-    const bookRow = selectedItem.parentElement.parentElement;
-    
-    if (selectedItem.classList.contains("trash-btn")) {
-      console.log("Trash btn");
-      console.log(bookRow);
-      bookRow.classList.add("fall");
-      bookRow.addEventListener("transitionend", function () {
-        bookRow.remove();
-      });
-    } else {
-      console.log("Not trash btn");
-      return;
-    }
- }
+  if (selectedItem.classList.contains("trash-btn")) {
+    console.log("Trash btn");
+    console.log(bookRow);
+    bookRow.classList.add("fall");
+    bookRow.addEventListener("transitionend", function () {
+      bookRow.remove();
+    });
+  } else {
+    console.log("Not trash btn");
+    return;
+  }
+}
 
- // Get books from library
- function getBooks() {
-   return myLibrary;
- }
+// Get books from library
+const getBooks = () =>
+  localStorage.getItem(localStorageItem)
+    ? JSON.parse(localStorage.getItem(localStorageItem))
+    : [];
 
+// Save book to LS
+function saveLocalTodos(book) {
+  let myBooksLibrary;
+  if (localStorage.getItem(localStorageItem)) {
+    myBooksLibrary = JSON.parse(localStorage.getItem(localStorageItem));
+  } else {
+    myBooksLibrary = [];
+  }
 
-
-
+  myBooksLibrary.push(book);
+  localStorage.setItem("myBooksLibrary", JSON.stringify(myBooksLibrary));
+}
