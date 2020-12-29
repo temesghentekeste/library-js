@@ -74,10 +74,9 @@ function addBookToLibrary(e) {
   newBookActions.appendChild(deleteBook);
   bookRow.appendChild(newBookActions);
 
-  //  saveLocalTodos(todo);
-
-  // Append the row back to tbody
+  // Save book to LS
   saveLocalTodos(newBook);
+  // Append the row back to tbody
   UITableBody.appendChild(bookRow);
 }
 
@@ -133,3 +132,30 @@ function saveLocalTodos(book) {
   myBooksLibrary.push(book);
   localStorage.setItem("myBooksLibrary", JSON.stringify(myBooksLibrary));
 }
+
+// Load books from LS
+// Load Todos
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("Loaded");
+  const books = getBooks();
+  books.forEach((book) => {
+    // Render books
+    render(book);
+  });
+});
+
+// Render books
+const render = (book) => {
+  // Create and append a task to the taskList
+  const html = `
+    <tr class="book" id="${book.id}">
+      <td>${book.author}</td>
+      <td>${book.title}</td>
+      <td>${book.pages}</td>
+      <td>${book.status ? "Read" : "Not Read"}</td>
+      <td><button class="trash-btn"><i class="fas fa-trash"></i></button> </td>
+    </tr>
+  `;
+
+  UITableBody.innerHTML += html;
+};
