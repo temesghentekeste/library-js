@@ -24,13 +24,13 @@
     
     <form>
       <label for="author"><b>Author</b></label>
-      <input type="text" placeholder="Author" class="author" name="author/>
+      <input type="text" placeholder="Author" class="txt-author" name="author/>
       <label for="title"><b>Title</b></label>
-      <input type="text" placeholder="Book Title" p class="title" name="title" />
+      <input type="text" placeholder="Book Title" p class="txt-title" name="title" />
       <label for="pages"><b>Page Number</b></label>
-      <input type="number"placeholder="Page Number"  class="pages" name="pages"/>
-      <div class="toggle-switch" tabindex="0">
-        <input type="checkbox" name="my_checkbox" value="yes" id="checkbox-id" />
+      <input type="number"placeholder="Page Number"  class="num-pages" name="pages"/>
+      <div class="toggle-switch">
+        <input type="checkbox" name="my_checkbox" value="no" class="chk-status" />
         <label for="checkbox-id">
           <div class="area" aria-hidden="true">
             <div class="background">
@@ -46,7 +46,24 @@
     </form>
 
     <div class="library-container">
-      <ul class="book-list"></ul>
+      <table>
+        <thead>
+          <tr>
+            <th>Author</th>
+            <th>Title</th>
+            <th>Pages</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody class="table-body">
+          <tr>
+            <td data-column="First Name">James</td>
+            <td data-column="Last Name">Matman</td>
+            <td data-column="Job Title">Chief Sandwich Eater</td>
+            <td data-column="Twitter">@james</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 
