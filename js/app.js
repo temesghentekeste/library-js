@@ -75,7 +75,7 @@ function addBookToLibrary(e) {
   bookRow.appendChild(newBookActions);
 
   // Save book to LS
-  saveLocalTodos(newBook);
+  saveBookLS(newBook);
   // Append the row back to tbody
   UITableBody.appendChild(bookRow);
 }
@@ -87,7 +87,6 @@ UIBtnToggleForm.addEventListener("click", (e) => {
 function getStatus(event) {
   if (event.target.checked) {
     bookStatus = true;
-    console.log(event.target.value, bookStatus);
   } else {
     bookStatus = false;
     console.log(event.target.value, bookStatus);
@@ -102,12 +101,12 @@ function deleteEdit(e) {
   const bookRow = selectedItem.parentElement.parentElement;
 
   if (selectedItem.classList.contains("trash-btn")) {
-    console.log("Trash btn");
-    console.log(bookRow);
     bookRow.classList.add("fall");
     bookRow.addEventListener("transitionend", function () {
       bookRow.remove();
     });
+    const bookToDelte = getBook(bookRow);
+    deleteBookLS(bookToDelte);
   } else {
     console.log("Not trash btn");
     return;
@@ -121,7 +120,7 @@ const getBooks = () =>
     : [];
 
 // Save book to LS
-function saveLocalTodos(book) {
+function saveBookLS(book) {
   let myBooksLibrary;
   if (localStorage.getItem(localStorageItem)) {
     myBooksLibrary = JSON.parse(localStorage.getItem(localStorageItem));
@@ -159,3 +158,20 @@ const render = (book) => {
 
   UITableBody.innerHTML += html;
 };
+
+// Get Book
+const getBook = selectedBook => {
+  let id = selectedBook.getAttribute("id");
+  id = parseInt(id);
+  const books = getBooks();
+  const book = books.find(b => b.id == id);
+  return book;
+}
+
+// Delete Book LS
+const deleteBookLS = book => {
+  let books = getBooks();
+  books = books.filter( b => b.id != book.id);
+  localStorage.setItem(localStorageItem, JSON.stringify(books));
+
+}
