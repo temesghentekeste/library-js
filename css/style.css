@@ -1,3 +1,8 @@
+:root {
+  --color-primary: #8f94ce;
+  --color-secondary: #478be2;
+  --color-danger: #cf4d3b;
+}
 * {
   margin: 0;
   padding: 0;
@@ -5,7 +10,11 @@
 }
 
 body {
-  background-image: linear-gradient(120deg, #8f94ce, #478be2);
+  background-image: linear-gradient(
+    120deg,
+    var(--color-primary),
+    var(--color-secondary)
+  );
   color: #000;
   font-family: "Roboto", sans-serif;
 }
@@ -16,8 +25,8 @@ table {
   margin: 50px auto;
 }
 
-
 /* Zebra striping */
+
 tr:nth-of-type(odd) {
   background: #eee;
 }
@@ -67,16 +76,14 @@ button {
   padding: 0.6rem 0.8rem;
   font-weight: bold;
   font-size: 1.4rem;
- background: linear-gradient(120deg, #242ea0, #478be2);
+  background: linear-gradient(120deg, #242ea0, #478be2);
   color: #fff;
-} 
+}
 
 .container {
   margin: 0 auto;
   max-width: 1120px;
 }
-
-
 
 .form-popup {
   padding: 1rem;
@@ -85,6 +92,31 @@ button {
 .hidden {
   display: none;
 }
+
+.trash-btn {
+  background: var(--color-danger);
+  border: none;
+  border-radius: 50%;
+  padding: 1rem;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.fa-trash {
+  pointer-events: none;
+}
+
+.book {
+  transition: all .3s ease ;
+}
+
+.fall {
+  transform: translateY(8rem) rotateZ(25deg);
+  opacity: 0;
+}
+
 @media only screen and (max-width: 760px),
   (min-device-width: 768px) and (max-device-width: 1024px) {
   table {
