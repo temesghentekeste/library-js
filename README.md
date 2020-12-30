@@ -58,6 +58,7 @@ Library JS is a JavaScript project that stores typical book attributes as book a
 
 ## Prerequisites<a name = "prerequisites"></a>
 - A modern up-to-date browser
+- Text Editor
 
 ## ✒️  Author <a name = "author"></a>
 
