@@ -192,13 +192,13 @@ const updateUI = (currentBook) => {
 
 function addBookToLibrary(e) {
   e.preventDefault();
-
   const author = UITextAuthour.value.trim();
   const title = UITextTitle.value.trim();
   const pages = UINumPages.value;
   const status = bookStatus;
   const newBook = new Book(author, title, pages, status);
 
+  if (author === '' || title === '' || pages === '' || status === '') return;
   if (isBookToUpdate === true) {
     updateUI(currentBook);
     bookStatus = currentBook.status;
