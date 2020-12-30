@@ -2,8 +2,7 @@ let localStorageItem = "myBooksLibrary";
 let bookStatus = false;
 let isBookToUpdate = false;
 let currentBook;
-let tableRowsSelector =  '#books tbody';
-
+let tableRowsSelector = "#books tbody";
 
 const UITextAuthour = document.querySelector(".txt-author");
 const UITextTitle = document.querySelector(".txt-title");
@@ -33,9 +32,11 @@ function addBookToLibrary(e) {
   const pages = UINumPages.value;
   const status = bookStatus;
   const newBook = new Book(author, title, pages, status);
+  console.log(title, "addnewbook");
 
-  if( isBookToUpdate === true) {
+  if (isBookToUpdate === true) {
     updateUI(currentBook);
+    updateLS();
     return;
   }
 
@@ -46,11 +47,9 @@ function addBookToLibrary(e) {
 
   // Add ID to bookRow: newBook
   const books = getBooks();
-  console.log(books, "call getbooks");
-  console.log(books);
   let id;
   if (books.length > 0) {
-    id = books[books.length - 1].id
+    id = books[books.length - 1].id;
     id = id + 1;
   } else {
     id = 1;
@@ -204,7 +203,7 @@ const deleteBookLS = (book) => {
 const displayCurrentBook = (book) => {
   console.log("Book", book);
   isBookToUpdate = true;
-  UIBtnAddBook.textContent = "Update Book"
+  UIBtnAddBook.textContent = "Update Book";
   if (UIFormContainer.classList.contains("hidden")) {
     UIFormContainer.classList.remove("hidden");
   }
@@ -214,19 +213,29 @@ const displayCurrentBook = (book) => {
   UIChKStatus.checked = book.status;
 };
 
-// Update Current Book
-const updateBook = currentBook => {
-}
-
 // Update UI
-const updateUI = currentBook => {
+const updateUI = (currentBook) => {
   let id = currentBook.id;
-  let book= document.querySelector(`${tableRowsSelector} #item-${id}`);
-  const html = getHTML(currentBook);
+  let book = document.querySelector(`${tableRowsSelector} #item-${id}`);
+  const html = getHTML();
   console.log(html);
   book.innerHTML = html;
   resetForm();
-}
+};
+
+// Update LS
+const updateLS = () => {
+  let books = getBooks();
+
+  books.forEach((b, index) => {
+    if (b.id === currentBook.id) {
+      books.splice(index, 1, currentBook);
+      return;
+    }
+  });
+
+  localStorage.setItem(localStorageItem, JSON.stringify(books));
+};
 
 const resetForm = () => {
   UITextAuthour.value = "";
@@ -236,25 +245,24 @@ const resetForm = () => {
 
   isBookToUpdate = false;
   UIBtnAddBook.textContent = "Add New Book";
-}
+};
 
-const parseId = id  => {
+const parseId = (id) => {
   const arrId = id.split("-");
   return parseInt(arrId[1]);
-}
+};
 
 // Get HTML
 const getHTML = () => {
-  const author = UITextAuthour.value.trim();
-  const title = UITextTitle.value.trim();
-  const pages = UINumPages.value;
-  const status = bookStatus;
-  const newBook = new Book(author, title, pages, status);
+  currentBook.author = UITextAuthour.value.trim();
+  currentBook.title = UITextTitle.value.trim();
+  currentBook.pages = UINumPages.value;
+  currentBook.status = bookStatus;
   const html = `
     <tr class="book" id="item-${currentBook.id}">
-      <td>${UITextAuthour.value.trim()}</td>
-      <td>${UITextTitle.value.trim()}</td>
-      <td>${UINumPages.value}</td>
+      <td>${currentBook.author}</td>
+      <td>${currentBook.title}</td>
+      <td>${currentBook.pages}</td>
       <td>${bookStatus ? "Read" : "Not Read"}</td>
       <td><button class="trash-btn"><i class="fas fa-trash"></i></button> 
       <button class="edit-btn"><i class="fas fa-edit"></i></button>
@@ -262,4 +270,4 @@ const getHTML = () => {
     </tr>
   `;
   return html;
-}
+};
