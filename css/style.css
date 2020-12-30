@@ -1,6 +1,7 @@
 :root {
   --color-primary: #8f94ce;
   --color-secondary: #478be2;
+  --color-success: #32bd55;
   --color-danger: #cf4d3b;
 }
 * {
@@ -93,7 +94,8 @@ button {
   display: none;
 }
 
-.trash-btn {
+.trash-btn,
+.edit-btn {
   background: var(--color-danger);
   border: none;
   border-radius: 50%;
@@ -104,7 +106,13 @@ button {
   font-size: 1rem;
 }
 
-.fa-trash {
+.edit-btn {
+  background: var(--color-success);
+  margin-left: 0.5rem;
+}
+
+
+.fa-trash, .fa-edit {
   pointer-events: none;
 }
 
@@ -115,6 +123,10 @@ button {
 .fall {
   transform: translateY(8rem) rotateZ(25deg);
   opacity: 0;
+}
+
+.actions {
+  width: 130px;
 }
 
 @media only screen and (max-width: 760px),
