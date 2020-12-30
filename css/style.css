@@ -146,6 +146,7 @@ button {
   padding: 0.5rem;
   right: -10px;
   top: 80px;
+  clip-path: polygon(0% 0%, 100% 0%, 99% 87%, 74% 87%, 75% 100%, 50% 90%, 0 90%);
 }
 
 .book-catalog-title,
@@ -154,15 +155,14 @@ button {
 .to-read {
   padding: 0.5rem;
   font-weight: 600;
-  border-bottom: 1px dotted #fff;;
+  border-bottom: 1px dotted #fff;
 }
 
 .total,
 .completed,
 .to-read {
-  color:rgb(111, 168, 184);
+  color: rgb(111, 168, 184);
 }
-
 
 .form-popup {
   justify-content: center;
@@ -209,7 +209,8 @@ button {
 }
 
 .fa-trash,
-.fa-edit {
+.fa-edit,
+.min-max-icon {
   pointer-events: none;
 }
 

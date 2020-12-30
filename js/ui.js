@@ -9,6 +9,7 @@ const UIFormContainer = document.querySelector(".form-popup");
 const UITableBooks = document.querySelector("#books");
 const UIBooksContainer = document.querySelector(".library-container");
 const UIHeader = document.querySelector("header");
+const UIMinMaxIcon = document.querySelector("min-max-icon");
 
 UIBtnAddBook.addEventListener("click", addBookToLibrary);
 UIChKStatus.addEventListener("change", getStatus);
@@ -128,9 +129,9 @@ function deleteEdit(e) {
     renderBooksCatalog(getBooks());
   } else if (selectedItem.classList.contains("edit-btn")) {
     displayCurrentBook(currentBook);
+    toggleMinMaxIcon();
     bookStatus = currentBook.status;
     console.log(UIChKStatus.checked, bookStatus, currentBook);
-
   } else {
     return;
   }
@@ -184,6 +185,7 @@ const resetForm = () => {
 
 UIBtnToggleForm.addEventListener("click", (e) => {
   UIFormContainer.classList.toggle("hidden");
+  toggleMinMaxIcon();
   return;
 });
 
@@ -204,6 +206,14 @@ const toggleEmptyMessage = (isEmpty) => {
     if (UIEmptyMsg !== null) UIEmptyMsg.parentElement.remove();
   }
 };
+
+const toggleMinMaxIcon = () => {
+   if (UIFormContainer.classList.contains("hidden")) {
+     UIBtnToggleForm.innerHTML = `<i class="fas fa-plus-square min-max-icon"></i>`;
+   } else {
+     UIBtnToggleForm.innerHTML = `<i class="fas fa-minus-square min-max-icon"></i>`;
+   }
+}
 
 const renderBooksCatalog = (books) => {
   const total = books.length;
