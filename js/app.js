@@ -3,6 +3,7 @@ let bookStatus = false;
 let isBookToUpdate = false;
 let currentBook;
 let tableRowsSelector = "#books tbody";
+let booksCatalog = {};
 
 function Book(author, title, pages, status) {
   this.author = author;
@@ -36,6 +37,7 @@ const getBook = (selectedBook) => {
   id = parseId(id);
   const books = getBooks();
   const book = books.find((b) => b.id == id);
+  console.log("getBook", book);
   return book;
 };
 

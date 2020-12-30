@@ -6,6 +6,9 @@ const UITableBody = document.querySelector(".table-body");
 const UIBtnAddBook = document.querySelector(".btn-add-book");
 const UIBtnToggleForm = document.querySelector(".btn-show-form");
 const UIFormContainer = document.querySelector(".form-popup");
+const UITableBooks = document.querySelector("#books");
+const UIBooksContainer = document.querySelector(".library-container");
+const UIHeader = document.querySelector("header");
 
 UIBtnAddBook.addEventListener("click", addBookToLibrary);
 UIChKStatus.addEventListener("change", getStatus);
@@ -13,9 +16,16 @@ UITableBody.addEventListener("click", deleteEdit);
 
 document.addEventListener("DOMContentLoaded", () => {
   const books = getBooks();
-  books.forEach((book) => {
-    render(book);
-  });
+  renderBooksCatalog(books);
+  if (books.length === 0) {
+    hideBooksTable("hidden");
+    console.log("Currently, your books library is empty!");
+    return;
+  } else {
+    books.forEach((book) => {
+      render(book);
+    });
+  }
 });
 
 function addBookToLibrary(e) {
@@ -29,7 +39,12 @@ function addBookToLibrary(e) {
 
   if (isBookToUpdate === true) {
     updateUI(currentBook);
+    bookStatus = currentBook.status;
+    console.log(UIChKStatus.checked, bookStatus, currentBook);
+    console.log("*************** add update*******");
     updateLS();
+    renderBooksCatalog(getBooks());
+    resetForm();
     return;
   }
 
@@ -62,6 +77,7 @@ function addBookToLibrary(e) {
   const newBookStatus = document.createElement("td");
   newBookStatus.innerHTML = `${newBook.status ? "Read" : "Not Read"}`;
   bookRow.appendChild(newBookStatus);
+  console.log(newBook, "newBook");
 
   const newBookActions = document.createElement("td");
   const deleteBook = document.createElement("button");
@@ -77,6 +93,10 @@ function addBookToLibrary(e) {
 
   saveBookLS(newBook);
   UITableBody.appendChild(bookRow);
+  UITableBooks.classList.remove("hidden");
+  toggleEmptyMessage(false);
+  renderBooksCatalog(getBooks());
+  resetForm();
 }
 
 function getStatus(event) {
@@ -98,11 +118,19 @@ function deleteEdit(e) {
     bookRow.classList.add("fall");
     bookRow.addEventListener("transitionend", function () {
       bookRow.remove();
+      const books = getBooks();
+      if (books.length === 0) {
+        hideBooksTable("hidden");
+      }
       resetForm();
     });
     deleteBookLS(currentBook);
+    renderBooksCatalog(getBooks());
   } else if (selectedItem.classList.contains("edit-btn")) {
     displayCurrentBook(currentBook);
+    bookStatus = currentBook.status;
+    console.log(UIChKStatus.checked, bookStatus, currentBook);
+
   } else {
     return;
   }
@@ -149,12 +177,56 @@ const resetForm = () => {
   UITextTitle.value = "";
   UINumPages.value = 0;
   UIChKStatus.checked = false;
-
   isBookToUpdate = false;
   UIBtnAddBook.textContent = "Add New Book";
+  bookStatus = false;
 };
 
 UIBtnToggleForm.addEventListener("click", (e) => {
   UIFormContainer.classList.toggle("hidden");
   return;
 });
+
+const hideBooksTable = (style) => {
+  UITableBooks.classList.add(style);
+  toggleEmptyMessage(true);
+};
+
+const toggleEmptyMessage = (isEmpty) => {
+  const UIEmptyMsg = document.querySelector(".empty-text");
+  if (isEmpty) {
+    if (UIEmptyMsg !== null) UIEmptyMsg.parentElement.remove();
+
+    const div = document.createElement("div");
+    div.innerHTML = `<h1 class="m-1 empty-text">Empty Book Store. Click the button to add books!</h1>`;
+    UIBooksContainer.insertAdjacentElement("beforeend", div);
+  } else {
+    if (UIEmptyMsg !== null) UIEmptyMsg.parentElement.remove();
+  }
+};
+
+const renderBooksCatalog = (books) => {
+  const total = books.length;
+  let totalRead = 0;
+  let totoalNotRead = 0;
+
+  books.forEach((b) => (b.status ? ++totalRead : ++totoalNotRead));
+
+  booksCatalog = {};
+  booksCatalog.total = total;
+  booksCatalog.read = totalRead;
+  booksCatalog.notRead = totoalNotRead;
+
+  const div = document.createElement("div");
+  div.classList.add("book-catalog");
+  const html = `
+      <p class="book-catalog-title">Books Catalog</p>
+      <div class="info">
+      <p class="total">Total: <span>${booksCatalog.total}</span></p>
+      <p class="completed">Completed: <span>${booksCatalog.read}</span></p>
+      <p class="to-read">To be read: <span>${booksCatalog.notRead}</span></p>
+      </div>
+      `;
+  div.innerHTML = html;
+  UIHeader.insertAdjacentElement("beforeend", div);
+};
