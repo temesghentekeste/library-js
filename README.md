@@ -34,10 +34,12 @@ Library JS is a JavaScript project that stores typical book attributes as book a
 
 ## Screenshots <a name = "screenshots"></a>
 
-### Books List
-![screenshot](./images/bookUI.png) 
+### Add Book
+![screenshot](./images/screenshot_add.gif) 
 ### Update Book
-![screenshot](./images/update-book.png) 
+![screenshot](./images/screenshot_update.gif) 
+### Sample Code
+![screenshot](./images/screenshot_code.gif) 
 
 ## 🔧 Built with<a name = "with"></a>
 
