@@ -24,7 +24,29 @@ const BookCtrl = (() => {
       return data.books;
     },
 
-    addBook({ author, title, pages, status }) {
+    getBookCatalog() {
+      const { books } = data;
+      const total = data.books.length;
+      let totalRead = 0;
+      let totalNotRead = 0;
+
+      books.forEach((b) => {
+        if (b.status === true) totalRead += 1;
+        else totalNotRead += 1;
+      });
+
+      const booksCatalog = {
+        total,
+        read: totalRead,
+        notRead: totalNotRead,
+      };
+
+      return booksCatalog;
+    },
+
+    addBook({
+      author, title, pages, status,
+    }) {
       let id;
       if (data.books.length > 0) {
         id = data.books[data.books.length - 1].id;
@@ -56,6 +78,7 @@ const UICtrl = (() => {
     table: '#books',
     tableContainer: '.library-container',
     emptyDataStore: '.empty-text',
+    mainHeader: 'header',
   };
 
   const populateBooks = (books) => {
@@ -134,7 +157,7 @@ const UICtrl = (() => {
     document.querySelector(UISelectors.txtBookAuthor).value = '';
     document.querySelector(UISelectors.txtBookTitle).value = '';
     document.querySelector(UISelectors.numBookPages).value = '';
-    document.querySelector(UISelectors.chkBookStatus).value = '';
+    document.querySelector(UISelectors.chkBookStatus).checked = false;
   };
 
   const hideTable = () => {
@@ -147,8 +170,7 @@ const UICtrl = (() => {
 
   const displayEmptyBookStoreMessage = () => {
     const div = document.createElement('div');
-    div.innerHTML =
-      '<h1 class="m-1 empty-text">Empty Book Store. Click the button to add books!</h1>';
+    div.innerHTML = '<h1 class="m-1 empty-text">Empty Book Store. Click the button to add books!</h1>';
     document
       .querySelector(UISelectors.tableContainer)
       .insertAdjacentElement('beforeend', div);
@@ -156,7 +178,7 @@ const UICtrl = (() => {
 
   const hideEmptyBookStoreMessage = () => {
     const UIEmptyDSText = document.querySelector(UISelectors.emptyDataStore);
-    
+
     UIEmptyDSText.parentElement.remove();
   };
 
@@ -166,6 +188,21 @@ const UICtrl = (() => {
     pages: document.querySelector(UISelectors.numBookPages).value,
     status: document.querySelector(UISelectors.chkBookStatus).checked,
   });
+
+  const displayBookCatalog = (booksCatalog) => {
+    const div = document.createElement('div');
+    div.classList.add('book-catalog');
+    const html = `
+      <p class="book-catalog-title">Books Catalog</p>
+      <div class="info">
+      <p class="total">Total: <span>${booksCatalog.total}</span></p>
+      <p class="completed">Completed: <span>${booksCatalog.read}</span></p>
+      <p class="to-read">To be read: <span>${booksCatalog.notRead}</span></p>
+      </div>
+      `;
+    div.innerHTML = html;
+    document.querySelector(UISelectors.mainHeader).insertAdjacentElement('beforeend', div);
+  };
 
   const getSelectors = () => UISelectors;
   return {
@@ -180,6 +217,7 @@ const UICtrl = (() => {
     displayTable,
     displayEmptyBookStoreMessage,
     hideEmptyBookStoreMessage,
+    displayBookCatalog,
   };
 })();
 
@@ -194,9 +232,9 @@ const App = ((BookCtrl, UICtrl) => {
       const bookInput = UICtrl.getBookInput();
 
       if (
-        bookInput.author === '' ||
-        bookInput.title === '' ||
-        bookInput.pages === ''
+        bookInput.author === ''
+        || bookInput.title === ''
+        || bookInput.pages === ''
       ) {
         return;
       }
@@ -205,11 +243,13 @@ const App = ((BookCtrl, UICtrl) => {
       UICtrl.addBookRow(newBook);
       const isEmptyDS = document.querySelector(UISelectors.emptyDataStore);
 
-      if( isEmptyDS ) {
+      if (isEmptyDS) {
         UICtrl.hideEmptyBookStoreMessage();
         UICtrl.displayTable();
       }
 
+      const bookCatalog = BookCtrl.getBookCatalog();
+      UICtrl.displayBookCatalog(bookCatalog);
       UICtrl.clearInput();
     };
 
@@ -242,6 +282,8 @@ const App = ((BookCtrl, UICtrl) => {
       UICtrl.hideTable();
       UICtrl.displayEmptyBookStoreMessage();
     }
+    const bookCatalog = BookCtrl.getBookCatalog();
+    UICtrl.displayBookCatalog(bookCatalog);
   };
 
   return {
