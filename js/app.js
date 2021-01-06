@@ -17,6 +17,7 @@ const BookCtrl = (() => {
     totalBooks: 0,
     totalUnRead: 0,
     totalRead: 0,
+    mode: 'insert',
   };
 
   return {
@@ -92,15 +93,16 @@ const BookCtrl = (() => {
       return data.currentBook;
     },
 
-    setCurrentBookMode() {
-      data.currentBook.mode = 'update';
+    setCurrentBookMode(mode = 'update') {
+      data.mode = mode;
     },
 
     getCurrentBookMode() {
-      if (data.currentBook !== null) {
-        return data.currentBook.mode;
-      }
-      return 'insert';
+      return data.mode;
+    },
+
+    deleteBook(book) {
+      data.books = data.books.filter((b) => b.id !== book.id);
     },
 
     parseId(id) {
@@ -222,12 +224,16 @@ const UICtrl = (() => {
     row.innerHTML = html;
   };
 
+  const deleteBookRow = (bookRow) => {
+    bookRow.remove();
+  };
+
   const clearInput = () => {
     document.querySelector(UISelectors.txtBookAuthor).value = '';
     document.querySelector(UISelectors.txtBookTitle).value = '';
     document.querySelector(UISelectors.numBookPages).value = '';
     document.querySelector(UISelectors.chkBookStatus).checked = false;
-    document.querySelector(UISelectors.addUpdateBtn).innerText = "Add New Book";
+    document.querySelector(UISelectors.addUpdateBtn).innerText = 'Add New Book';
   };
 
   const hideTable = () => {
@@ -290,6 +296,12 @@ const UICtrl = (() => {
     document.querySelector(UISelectors.chkBookStatus).checked = book.status;
   };
 
+  const resetUI = () => {
+    const bookCatalog = BookCtrl.getBookCatalog();
+    displayBookCatalog(bookCatalog);
+    clearInput();
+  };
+
   const getSelectors = () => UISelectors;
   return {
     populateBooks,
@@ -308,6 +320,8 @@ const UICtrl = (() => {
     addCurrentBookToForm,
     displayFormContainer,
     updateBookRow,
+    deleteBookRow,
+    resetUI,
   };
 })();
 
@@ -335,7 +349,9 @@ const App = ((BookCtrl, UICtrl) => {
       if (currentBookMode === 'update') {
         const updatedBook = BookCtrl.updateBook(bookInput);
         UICtrl.updateBookRow(updatedBook);
-        UICtrl.clearInput();
+
+        BookCtrl.setCurrentBookMode('insert');
+        UICtrl.resetUI();
         return;
       }
 
@@ -347,10 +363,7 @@ const App = ((BookCtrl, UICtrl) => {
         UICtrl.hideEmptyBookStoreMessage();
         UICtrl.displayTable();
       }
-
-      const bookCatalog = BookCtrl.getBookCatalog();
-      UICtrl.displayBookCatalog(bookCatalog);
-      UICtrl.clearInput();
+      UICtrl.resetUI();
     };
 
     const toggleForm = (e) => {
@@ -365,23 +378,33 @@ const App = ((BookCtrl, UICtrl) => {
     const deleteEditBook = (e) => {
       const selectedBook = e.target;
       const bookRow = selectedBook.parentElement.parentElement;
-
       let id = bookRow.getAttribute('id');
+
       if (id === null) {
         return;
       }
+
       id = BookCtrl.parseId(id);
       const currentBook = BookCtrl.getBookById(id);
 
       // Set current item
       BookCtrl.setCurrentBook(currentBook);
       if (selectedBook.classList.contains('trash-btn')) {
+        BookCtrl.deleteBook(currentBook);
+        UICtrl.deleteBookRow(bookRow);
+        const books = BookCtrl.getBooks();
+        if (books.length === 0) {
+          UICtrl.hideTable();
+          UICtrl.displayEmptyBookStoreMessage();
+        }
+
+        UICtrl.resetUI();
         return;
       }
 
-       if (!selectedBook.classList.contains('edit-btn')) {
-         return;
-       }
+      if (!selectedBook.classList.contains('edit-btn')) {
+        return;
+      }
 
       const formContainer = document.querySelector(UISelectors.frmContainer);
 
@@ -408,9 +431,9 @@ const App = ((BookCtrl, UICtrl) => {
   };
 
   const init = () => {
-    const books = BookCtrl.getBooks();
     loadEventListeners();
-
+    
+    const books = BookCtrl.getBooks();
     if (books.length > 0) {
       UICtrl.populateBooks();
       UICtrl.displayTable();
@@ -418,8 +441,7 @@ const App = ((BookCtrl, UICtrl) => {
       UICtrl.hideTable();
       UICtrl.displayEmptyBookStoreMessage();
     }
-    const bookCatalog = BookCtrl.getBookCatalog();
-    UICtrl.displayBookCatalog(bookCatalog);
+    UICtrl.resetUI();
   };
 
   return {
