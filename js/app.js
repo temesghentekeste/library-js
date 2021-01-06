@@ -42,23 +42,49 @@ const BookCtrl = (() => {
   };
 
   return {
-    logData() {
-      return data;
+    getBooks() {
+      return data.books;
     },
   };
 })();
 
 // UI Controller
 const UICtrl = (() => {
-  console.log('UI Controller...');
+  const UISelectors = {
+    tableBody: '.table-body',
+  };
+
+  const populateBooks = (books) => {
+    let html = '';
+
+    books.forEach((book) => {
+      html += `
+        <tr class="book" id="item-${book.id}">
+          <td>${book.author}</td>
+          <td>${book.title}</td>
+          <td>${book.pages}</td>
+          <td>${book.status ? 'Read' : 'Not Read'}</td>
+          <td><button class="trash-btn"><i class="fas fa-trash"></i></button> 
+          <button class="edit-btn"><i class="fas fa-edit"></i></button>
+          </td>
+        </tr>
+      `;
+    });
+
+    document.querySelector(UISelectors.tableBody).innerHTML = html;
+  };
+
+  return {
+    populateBooks,
+  };
 })();
 
 // App Controller
 
 const App = ((BookCtrl, UICtrl) => {
   const init = () => {
-    console.log('Initializing app ...');
-    BookCtrl.logData();
+    const books = BookCtrl.getBooks();
+    UICtrl.populateBooks(books);
   };
   return {
     init,
