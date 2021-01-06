@@ -11,10 +11,10 @@ const UIHeader = document.querySelector('header');
 const UITextAuthour = document.querySelector('.txt-author');
 
 const localStorageItem = 'myBooksLibrary';
+const tableRowsSelector = '#books tbody';
 let bookStatus = false;
 let isBookToUpdate = false;
 let currentBook;
-const tableRowsSelector = '#books tbody';
 let booksCatalog = {};
 
 function Book(author, title, pages, status) {
@@ -30,15 +30,12 @@ const getBooks = () => (localStorage.getItem(localStorageItem)
 
 function saveBookLS(book) {
   let myBooksLibrary;
-  if (localStorage.getItem(localStorageItem)) {
-    myBooksLibrary = JSON.parse(localStorage.getItem(localStorageItem));
-  } else {
-    myBooksLibrary = [];
-  }
+  myBooksLibrary = getBooks();
 
   myBooksLibrary.push(book);
-  localStorage.setItem('myBooksLibrary', JSON.stringify(myBooksLibrary));
+  localStorage.setItem(localStorageItem, JSON.stringify(myBooksLibrary));
 }
+
 const parseId = (id) => {
   const arrId = id.split('-');
   return parseInt(arrId[1], 10);
@@ -91,6 +88,7 @@ const getHTML = () => {
   `;
   return html;
 };
+
 const toggleMinMaxIcon = () => {
   if (UIFormContainer.classList.contains('hidden')) {
     UIBtnToggleForm.innerHTML = '<i class="fas fa-plus-square min-max-icon"></i>';
@@ -98,6 +96,7 @@ const toggleMinMaxIcon = () => {
     UIBtnToggleForm.innerHTML = '<i class="fas fa-minus-square min-max-icon"></i>';
   }
 };
+
 const toggleEmptyMessage = (isEmpty) => {
   const UIEmptyMsg = document.querySelector('.empty-text');
   if (isEmpty) {
@@ -181,6 +180,7 @@ const resetForm = () => {
   UIBtnAddBook.textContent = 'Add New Book';
   bookStatus = false;
 };
+
 const updateUI = (currentBook) => {
   const { id } = currentBook;
   const book = document.querySelector(`${tableRowsSelector} #item-${id}`);
@@ -267,6 +267,7 @@ function getStatus(event) {
 
   return bookStatus;
 }
+
 const displayCurrentBook = (book) => {
   isBookToUpdate = true;
   UIBtnAddBook.textContent = 'Update Book';
