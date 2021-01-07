@@ -1,197 +1,41 @@
-const StorageCtrl = (() => {
-  const localStorageKey = 'bookItems';
-  return {
-    storeItem(item) {
-      let bookItems;
+class Book {
+  constructor() {
+    this.book = {
+      id: 0,
+      author: 'Anonymous',
+      title: 'Anonymous',
+      pages: 0,
+      status: false,
+    };
 
-      if (localStorage.getItem(localStorageKey) === null) {
-        bookItems = [];
-        bookItems.push(item);
-      } else {
-        bookItems = JSON.parse(localStorage.getItem(localStorageKey));
-        bookItems.push(item);
-      }
-      localStorage.setItem(localStorageKey, JSON.stringify(bookItems));
-    },
+    this.localStorageKey = 'myBooksStorageKey';
+    this.data = {
+      books: this.getItemsFromStorage(),
+      currentBook: null,
+      totalBooks: 0,
+      totalUnRead: 0,
+      totalRead: 0,
+      mode: 'insert',
+    };
 
-    getItemsFromStorage() {
-      let bookItems;
-      if (localStorage.getItem(localStorageKey) === null) {
-        bookItems = [];
-      } else {
-        bookItems = JSON.parse(localStorage.getItem(localStorageKey));
-      }
-      return bookItems;
-    },
-
-    updateItemStorage(updatedItem) {
-      const bookItems = JSON.parse(localStorage.getItem(localStorageKey));
-      bookItems.forEach((meal, index) => {
-        if (meal.id === updatedItem.id) {
-          bookItems.splice(index, 1, updatedItem);
-        }
-      });
-
-      localStorage.setItem(localStorageKey, JSON.stringify(bookItems));
-    },
-
-    deleteItemFromStorage(id) {
-      const bookItems = JSON.parse(localStorage.getItem(localStorageKey));
-      bookItems.forEach((item, index) => {
-        if (item.id === id) {
-          bookItems.splice(index, 1);
-        }
-      });
-      localStorage.setItem(localStorageKey, JSON.stringify(bookItems));
-    },
-
-    removeItemsFromStorage() {
-      localStorage.removeItem(localStorageKey);
-    },
-  };
-})();
-
-const BookCtrl = (() => {
-  function Book(id, author, title, pages, status) {
-    this.id = id;
-    this.author = author;
-    this.title = title;
-    this.pages = pages;
-    this.status = status;
+    this.uiSelectors = {
+      tableBody: '.table-body',
+      addUpdateBtn: '.btn-add-book',
+      toggleFromBtn: '.btn-show-form',
+      frmContainer: '.form-popup',
+      txtBookAuthor: '.txt-author',
+      txtBookTitle: '.txt-title',
+      numBookPages: '.num-pages',
+      chkBookStatus: '.chk-status',
+      table: '#books',
+      tableContainer: '.library-container',
+      emptyDataStore: '.empty-text',
+      mainHeader: 'header',
+      clearAll: '.clear-all',
+    };
   }
 
-  const data = {
-    books: StorageCtrl.getItemsFromStorage(),
-    currentBook: null,
-    totalBooks: 0,
-    totalUnRead: 0,
-    totalRead: 0,
-    mode: 'insert',
-  };
-
-  return {
-    getBooks() {
-      return data.books;
-    },
-
-    getBookCatalog() {
-      const { books } = data;
-      const total = data.books.length;
-      let totalRead = 0;
-      let totalNotRead = 0;
-
-      books.forEach((b) => {
-        if (b.status === true) totalRead += 1;
-        else totalNotRead += 1;
-      });
-
-      const booksCatalog = {
-        total,
-        read: totalRead,
-        notRead: totalNotRead,
-      };
-
-      data.booksCatalog = booksCatalog;
-
-      return data.booksCatalog;
-    },
-
-    addBook({
-      author, title, pages, status,
-    }) {
-      let id;
-      if (data.books.length > 0) {
-        id = data.books[data.books.length - 1].id;
-        id += 1;
-      } else {
-        id = 1;
-      }
-
-      pages = parseInt(pages, 10);
-
-      const newBook = new Book(id, author, title, pages, status);
-      data.books.push(newBook);
-      return newBook;
-    },
-
-    updateBook({
-      author, title, pages, status,
-    }) {
-      pages = parseInt(pages, 10);
-
-      const bookToUpdate = data.currentBook;
-      bookToUpdate.author = author;
-      bookToUpdate.title = title;
-      bookToUpdate.pages = pages;
-      bookToUpdate.status = status;
-
-      data.books.forEach((book, index) => {
-        if (book.id === bookToUpdate.id) {
-          data.books.splice(index, 1, bookToUpdate);
-        }
-      });
-      return bookToUpdate;
-    },
-
-    getBookById(id) {
-      const found = data.books.find((item) => item.id === id);
-      return found;
-    },
-
-    setCurrentBook(book) {
-      data.currentBook = book;
-    },
-
-    getCurrentBook() {
-      return data.currentBook;
-    },
-
-    setCurrentBookMode(mode = 'update') {
-      data.mode = mode;
-    },
-
-    getCurrentBookMode() {
-      return data.mode;
-    },
-
-    deleteBook(book) {
-      data.books = data.books.filter((b) => b.id !== book.id);
-    },
-
-    clearAllItems() {
-      data.books = [];
-      data.currentBook = null;
-      data.totalBooks = 0;
-      data.totalUnRead = 0;
-      data.totalRead = 0;
-      data.mode = 'insert';
-    },
-
-    parseId(id) {
-      const arrId = id.split('-');
-      return parseInt(arrId[1], 10);
-    },
-  };
-})();
-
-const UICtrl = (() => {
-  const UISelectors = {
-    tableBody: '.table-body',
-    addUpdateBtn: '.btn-add-book',
-    toggleFromBtn: '.btn-show-form',
-    frmContainer: '.form-popup',
-    txtBookAuthor: '.txt-author',
-    txtBookTitle: '.txt-title',
-    numBookPages: '.num-pages',
-    chkBookStatus: '.chk-status',
-    table: '#books',
-    tableContainer: '.library-container',
-    emptyDataStore: '.empty-text',
-    mainHeader: 'header',
-    clearAll: '.clear-all',
-  };
-
-  const populateBooks = (books) => {
+  populateBooks(books) {
     let html = '';
 
     books.forEach((book) => {
@@ -207,28 +51,31 @@ const UICtrl = (() => {
         </tr>
       `;
     });
+    document.querySelector(this.uiSelectors.tableBody).innerHTML = html;
+  }
 
-    document.querySelector(UISelectors.tableBody).innerHTML = html;
-  };
+  toggleForm() {
+    document
+      .querySelector(this.uiSelectors.frmContainer)
+      .classList.toggle('hidden');
+  }
 
-  const toggleForm = () => {
-    document.querySelector(UISelectors.frmContainer).classList.toggle('hidden');
-  };
+  displayFormContainer() {
+    document
+      .querySelector(this.uiSelectors.frmContainer)
+      .classList.remove('hidden');
+  }
 
-  const displayFormContainer = () => {
-    document.querySelector(UISelectors.frmContainer).classList.remove('hidden');
-  };
-
-  const toggleMinMaxIcon = (isHidden) => {
-    const toggler = document.querySelector(UISelectors.toggleFromBtn);
+  toggleMinMaxIcon(isHidden) {
+    const toggler = document.querySelector(this.uiSelectors.toggleFromBtn);
     if (isHidden) {
       toggler.innerHTML = '<i class="fas fa-plus-square min-max-icon"></i>';
     } else {
       toggler.innerHTML = '<i class="fas fa-minus-square min-max-icon"></i>';
     }
-  };
+  }
 
-  const addBookRow = (newBook) => {
+  addBookRow(newBook) {
     const bookRow = document.createElement('tr');
     bookRow.classList.add('book');
 
@@ -263,13 +110,13 @@ const UICtrl = (() => {
     bookRow.appendChild(newBookActions);
 
     document
-      .querySelector(UISelectors.tableBody)
+      .querySelector(this.uiSelectors.tableBody)
       .insertAdjacentElement('beforeend', bookRow);
-  };
+  }
 
-  const updateBookRow = (book) => {
+  updateBookRow(book) {
     const { id } = book;
-    const tableRow = UISelectors.tableBody;
+    const tableRow = this.uiSelectors.tableBody;
     const row = document.querySelector(`${tableRow} #item-${id}`);
     const html = `
         <tr class="book" id="item-${book.id}">
@@ -283,50 +130,53 @@ const UICtrl = (() => {
         </tr>
       `;
     row.innerHTML = html;
-  };
+  }
 
-  const deleteBookRow = (bookRow) => {
+  deleteBookRow = (bookRow) => {
     bookRow.remove();
   };
 
-  const clearInput = () => {
-    document.querySelector(UISelectors.txtBookAuthor).value = '';
-    document.querySelector(UISelectors.txtBookTitle).value = '';
-    document.querySelector(UISelectors.numBookPages).value = '';
-    document.querySelector(UISelectors.chkBookStatus).checked = false;
-    document.querySelector(UISelectors.addUpdateBtn).innerText = 'Add New Book';
-  };
+  clearInput() {
+    document.querySelector(this.uiSelectors.txtBookAuthor).value = '';
+    document.querySelector(this.uiSelectors.txtBookTitle).value = '';
+    document.querySelector(this.uiSelectors.numBookPages).value = '';
+    document.querySelector(this.uiSelectors.chkBookStatus).checked = false;
+    document.querySelector(this.uiSelectors.addUpdateBtn).innerText =
+      'Add New Book';
+  }
 
-  const hideTable = () => {
-    document.querySelector(UISelectors.table).classList.add('hidden');
-  };
+  hideTable() {
+    document.querySelector(this.uiSelectors.table).classList.add('hidden');
+  }
 
-  const displayTable = () => {
-    document.querySelector(UISelectors.table).classList.remove('hidden');
-  };
+  displayTable() {
+    document.querySelector(this.uiSelectors.table).classList.remove('hidden');
+  }
 
-  const displayEmptyBookStoreMessage = () => {
+  displayEmptyBookStoreMessage() {
     const div = document.createElement('div');
-    div.innerHTML = '<h1 class="m-1 empty-text">Empty Book Store. Click the button to add books!</h1>';
+    div.innerHTML =
+      '<h1 class="m-1 empty-text">Empty Book Store. Click the button to add books!</h1>';
     document
-      .querySelector(UISelectors.tableContainer)
+      .querySelector(this.uiSelectors.tableContainer)
       .insertAdjacentElement('beforeend', div);
-  };
+  }
 
-  const hideEmptyBookStoreMessage = () => {
-    const UIEmptyDSText = document.querySelector(UISelectors.emptyDataStore);
-
+  hideEmptyBookStoreMessage() {
+    const UIEmptyDSText = document.querySelector(
+      this.uiSelectors.emptyDataStore
+    );
     UIEmptyDSText.parentElement.remove();
-  };
+  }
 
-  const getBookInput = () => ({
-    author: document.querySelector(UISelectors.txtBookAuthor).value,
-    title: document.querySelector(UISelectors.txtBookTitle).value,
-    pages: document.querySelector(UISelectors.numBookPages).value,
-    status: document.querySelector(UISelectors.chkBookStatus).checked,
+  getBookInput = () => ({
+    author: document.querySelector(this.uiSelectors.txtBookAuthor).value,
+    title: document.querySelector(this.uiSelectors.txtBookTitle).value,
+    pages: document.querySelector(this.uiSelectors.numBookPages).value,
+    status: document.querySelector(this.uiSelectors.chkBookStatus).checked,
   });
 
-  const displayBookCatalog = (booksCatalog) => {
+  displayBookCatalog = (booksCatalog) => {
     const div = document.createElement('div');
     div.classList.add('book-catalog');
     const html = `
@@ -339,107 +189,81 @@ const UICtrl = (() => {
       `;
     div.innerHTML = html;
     document
-      .querySelector(UISelectors.mainHeader)
+      .querySelector(this.uiSelectors.mainHeader)
       .insertAdjacentElement('beforeend', div);
   };
 
-  const toggleAddUpdateBtn = () => {
-    document.querySelector(UISelectors.addUpdateBtn).textContent = 'Update Book';
+  toggleAddUpdateBtn = () => {
+    document.querySelector(this.uiSelectors.addUpdateBtn).textContent =
+      'Update Book';
   };
 
-  const addCurrentBookToForm = () => {
-    const book = BookCtrl.getCurrentBook();
-    document.querySelector(UISelectors.txtBookAuthor).value = book.author;
-    document.querySelector(UISelectors.txtBookTitle).value = book.title;
-    document.querySelector(UISelectors.numBookPages).value = book.pages;
-    document.querySelector(UISelectors.chkBookStatus).checked = book.status;
+  addCurrentBookToForm = () => {
+    const book = this.getCurrentBook();
+    document.querySelector(this.uiSelectors.txtBookAuthor).value = book.author;
+    document.querySelector(this.uiSelectors.txtBookTitle).value = book.title;
+    document.querySelector(this.uiSelectors.numBookPages).value = book.pages;
+    document.querySelector(this.uiSelectors.chkBookStatus).checked =
+      book.status;
   };
 
-  const resetUI = () => {
-    const bookCatalog = BookCtrl.getBookCatalog();
-    displayBookCatalog(bookCatalog);
-    clearInput();
+  resetUI = () => {
+    const bookCatalog = this.getBookCatalog();
+    this.displayBookCatalog(bookCatalog);
+    this.clearInput();
   };
 
-  const removeItems = () => {
-    let bookItems = document.querySelectorAll(UISelectors.table);
+  removeItems = () => {
+    let bookItems = document.querySelectorAll(this.uiSelectors.table);
     bookItems = Array.from(bookItems);
     bookItems.forEach((listItem) => listItem.remove());
   };
 
-  const getSelectors = () => UISelectors;
-  return {
-    populateBooks,
-    getSelectors,
-    toggleForm,
-    toggleMinMaxIcon,
-    getBookInput,
-    addBookRow,
-    clearInput,
-    hideTable,
-    displayTable,
-    displayEmptyBookStoreMessage,
-    hideEmptyBookStoreMessage,
-    displayBookCatalog,
-    toggleAddUpdateBtn,
-    addCurrentBookToForm,
-    displayFormContainer,
-    updateBookRow,
-    deleteBookRow,
-    resetUI,
-    removeItems,
-  };
-})();
-
-
-const App = ((BookCtrl, UICtrl) => {
-  const loadEventListeners = () => {
-    const UISelectors = UICtrl.getSelectors();
-
+  loadEventListeners() {
     const addBookSubmit = (e) => {
       e.preventDefault();
 
-      const bookInput = UICtrl.getBookInput();
+      const bookInput = this.getBookInput();
 
       if (
-        bookInput.author === ''
-        || bookInput.title === ''
-        || bookInput.pages === ''
+        bookInput.author === '' ||
+        bookInput.title === '' ||
+        bookInput.pages === ''
       ) {
         return;
       }
 
-      const currentBookMode = BookCtrl.getCurrentBookMode();
+      const currentBookMode = this.getCurrentBookMode();
 
       if (currentBookMode === 'update') {
-        const updatedBook = BookCtrl.updateBook(bookInput);
-        StorageCtrl.updateItemStorage(bookInput);
-        UICtrl.updateBookRow(updatedBook);
+        const updatedBook = this.updateBook(bookInput);
+        this.updateItemStorage(bookInput);
+        this.updateBookRow(updatedBook);
 
-        BookCtrl.setCurrentBookMode('insert');
-        UICtrl.resetUI();
+        this.setCurrentBookMode('insert');
+        this.resetUI();
         return;
       }
 
-      const newBook = BookCtrl.addBook(bookInput);
-      StorageCtrl.storeItem(newBook);
-      UICtrl.addBookRow(newBook);
-      const isEmptyDS = document.querySelector(UISelectors.emptyDataStore);
+      const newBook = this.addBook(bookInput);
+      this.storeItem(newBook);
+      this.addBookRow(newBook);
+      const isEmptyDS = document.querySelector(this.uiSelectors.emptyDataStore);
 
       if (isEmptyDS) {
-        UICtrl.hideEmptyBookStoreMessage();
-        UICtrl.displayTable();
+        this.hideEmptyBookStoreMessage();
+        this.displayTable();
       }
-      UICtrl.resetUI();
+      this.resetUI();
     };
 
     const toggleForm = (e) => {
       e.preventDefault();
-      UICtrl.toggleForm();
+      this.toggleForm();
       const isHidden = document
-        .querySelector(UISelectors.frmContainer)
+        .querySelector(this.uiSelectors.frmContainer)
         .classList.contains('hidden');
-      UICtrl.toggleMinMaxIcon(isHidden);
+      this.toggleMinMaxIcon(isHidden);
     };
 
     const deleteEditBook = (e) => {
@@ -451,21 +275,21 @@ const App = ((BookCtrl, UICtrl) => {
         return;
       }
 
-      id = BookCtrl.parseId(id);
-      const currentBook = BookCtrl.getBookById(id);
+      id = this.parseId(id);
+      const currentBook = this.getBookById(id);
 
-      BookCtrl.setCurrentBook(currentBook);
+      this.setCurrentBook(currentBook);
       if (selectedBook.classList.contains('trash-btn')) {
-        BookCtrl.deleteBook(currentBook);
-        StorageCtrl.deleteItemFromStorage(currentBook.id);
-        UICtrl.deleteBookRow(bookRow);
-        const books = BookCtrl.getBooks();
+        this.deleteBook(currentBook);
+        this.deleteItemFromStorage(currentBook.id);
+        this.deleteBookRow(bookRow);
+        const books = this.getBooks();
         if (books.length === 0) {
-          UICtrl.hideTable();
-          UICtrl.displayEmptyBookStoreMessage();
+          this.hideTable();
+          this.displayEmptyBookStoreMessage();
         }
 
-        UICtrl.resetUI();
+        this.resetUI();
         return;
       }
 
@@ -473,69 +297,222 @@ const App = ((BookCtrl, UICtrl) => {
         return;
       }
 
-      const formContainer = document.querySelector(UISelectors.frmContainer);
+      const formContainer = document.querySelector(
+        this.uiSelectors.frmContainer
+      );
 
       if (formContainer.classList.contains('hidden')) {
-        UICtrl.displayFormContainer();
+        this.displayFormContainer();
       }
 
-      UICtrl.toggleAddUpdateBtn();
-      UICtrl.addCurrentBookToForm();
-      BookCtrl.setCurrentBookMode('update');
+      this.toggleAddUpdateBtn();
+      this.addCurrentBookToForm();
+      this.setCurrentBookMode('update');
     };
 
     document
-      .querySelector(UISelectors.clearAll)
+      .querySelector(this.uiSelectors.clearAll)
       .addEventListener('click', (e) => {
         e.preventDefault();
-        BookCtrl.clearAllItems();
+        this.clearAllItems();
 
-        UICtrl.resetUI();
+        this.resetUI();
 
-        UICtrl.populateBooks([]);
-        UICtrl.hideTable();
+        this.populateBooks([]);
+        this.hideTable();
         const emptyDataStore = document.querySelector(
-          UISelectors.emptyDataStore,
+          this.uiSelectors.emptyDataStore
         );
 
         if (!emptyDataStore) {
-          UICtrl.displayEmptyBookStoreMessage();
+          this.displayEmptyBookStoreMessage();
         }
 
-        StorageCtrl.removeItemsFromStorage();
+        this.removeItemsFromStorage();
       });
 
     document
-      .querySelector(UISelectors.addUpdateBtn)
+      .querySelector(this.uiSelectors.addUpdateBtn)
       .addEventListener('click', addBookSubmit);
 
     document
-      .querySelector(UISelectors.toggleFromBtn)
+      .querySelector(this.uiSelectors.toggleFromBtn)
       .addEventListener('click', toggleForm);
 
     document
-      .querySelector(UISelectors.tableBody)
+      .querySelector(this.uiSelectors.tableBody)
       .addEventListener('click', deleteEditBook);
-  };
+  }
 
-  const init = () => {
-    loadEventListeners();
+  init() {
+    this.loadEventListeners();
 
-    const books = BookCtrl.getBooks();
+    const books = this.getBooks();
     if (books.length > 0) {
-      UICtrl.populateBooks(books);
+      this.populateBooks(books);
 
-      UICtrl.displayTable();
+      this.displayTable();
     } else {
-      UICtrl.hideTable();
-      UICtrl.displayEmptyBookStoreMessage();
+      this.hideTable();
+      this.displayEmptyBookStoreMessage();
     }
-    UICtrl.resetUI();
-  };
+    this.resetUI();
+  }
 
-  return {
-    init,
-  };
-})(BookCtrl, UICtrl);
+  storeItem(item) {
+    let bookItems;
 
-App.init();
+    if (localStorage.getItem(this.localStorageKey) === null) {
+      bookItems = [];
+      bookItems.push(item);
+    } else {
+      bookItems = JSON.parse(localStorage.getItem(this.localStorageKey));
+      bookItems.push(item);
+    }
+    localStorage.setItem(this.localStorageKey, JSON.stringify(bookItems));
+  }
+
+  getItemsFromStorage() {
+    let bookItems;
+    if (localStorage.getItem(this.localStorageKey) === null) {
+      bookItems = [];
+    } else {
+      bookItems = JSON.parse(localStorage.getItem(this.localStorageKey));
+    }
+    return bookItems;
+  }
+
+  updateItemStorage(updatedItem) {
+    const bookItems = JSON.parse(localStorage.getItem(this.localStorageKey));
+    console.log(updatedItem);
+    bookItems.forEach((book, index) => {
+      if (book.id === updatedItem.id) {
+        bookItems.splice(index, 1, updatedItem);
+      }
+    });
+
+    localStorage.setItem(this.localStorageKey, JSON.stringify(bookItems));
+  }
+
+  deleteItemFromStorage(id) {
+    const bookItems = JSON.parse(localStorage.getItem(this.localStorageKey));
+    bookItems.forEach((item, index) => {
+      if (item.id === id) {
+        bookItems.splice(index, 1);
+      }
+    });
+    localStorage.setItem(this.localStorageKey, JSON.stringify(bookItems));
+  }
+
+  removeItemsFromStorage() {
+    localStorage.removeItem(this.localStorageKey);
+  }
+
+  getBooks() {
+    return this.data.books;
+  }
+
+  getBookCatalog() {
+    const { books } = this.data;
+    const total = this.data.books.length;
+    let totalRead = 0;
+    let totalNotRead = 0;
+
+    books.forEach((b) => {
+      if (b.status === true) totalRead += 1;
+      else totalNotRead += 1;
+    });
+
+    const booksCatalog = {
+      total,
+      read: totalRead,
+      notRead: totalNotRead,
+    };
+
+    this.data.booksCatalog = booksCatalog;
+
+    return this.data.booksCatalog;
+  }
+
+  addBook({ author, title, pages, status }) {
+    let id;
+    if (this.data.books.length > 0) {
+      id = this.data.books[this.data.books.length - 1].id;
+      id += 1;
+    } else {
+      id = 1;
+    }
+
+    pages = parseInt(pages, 10);
+
+    this.book = {
+      id,
+      author,
+      title,
+      pages,
+      status,
+    };
+    this.data.books.push(this.book);
+    return this.book;
+  }
+
+  updateBook({ author, title, pages, status }) {
+    pages = parseInt(pages, 10);
+
+    const bookToUpdate = this.data.currentBook;
+    bookToUpdate.author = author;
+    bookToUpdate.title = title;
+    bookToUpdate.pages = pages;
+    bookToUpdate.status = status;
+
+    this.data.books.forEach((book, index) => {
+      if (book.id === bookToUpdate.id) {
+        this.data.books.splice(index, 1, bookToUpdate);
+      }
+    });
+    return bookToUpdate;
+  }
+
+  getBookById(id) {
+    const found = this.data.books.find((item) => item.id === id);
+    return found;
+  }
+
+  setCurrentBook(book) {
+    this.data.currentBook = book;
+  }
+
+  getCurrentBook() {
+    return this.data.currentBook;
+  }
+
+  setCurrentBookMode(mode = 'update') {
+    this.data.mode = mode;
+  }
+
+  getCurrentBookMode() {
+    return this.data.mode;
+  }
+
+  deleteBook(book) {
+    this.data.books = this.data.books.filter((b) => b.id !== book.id);
+  }
+
+  clearAllItems() {
+    this.data.books = [];
+    this.data.currentBook = null;
+    this.data.totalBooks = 0;
+    this.data.totalUnRead = 0;
+    this.data.totalRead = 0;
+    this.data.mode = 'insert';
+  }
+
+  parseId = (id) => {
+    const arrId = id.split('-');
+    return parseInt(arrId[1], 10);
+  };
+}
+
+const bookApp = new Book();
+bookApp.init();
+console.log('Starting');
