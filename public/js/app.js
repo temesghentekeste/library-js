@@ -141,8 +141,7 @@ class Book {
     document.querySelector(this.uiSelectors.txtBookTitle).value = '';
     document.querySelector(this.uiSelectors.numBookPages).value = '';
     document.querySelector(this.uiSelectors.chkBookStatus).checked = false;
-    document.querySelector(this.uiSelectors.addUpdateBtn).innerText =
-      'Add New Book';
+    document.querySelector(this.uiSelectors.addUpdateBtn).innerText = 'Add New Book';
   }
 
   hideTable() {
@@ -155,8 +154,7 @@ class Book {
 
   displayEmptyBookStoreMessage() {
     const div = document.createElement('div');
-    div.innerHTML =
-      '<h1 class="m-1 empty-text">Empty Book Store. Click the button to add books!</h1>';
+    div.innerHTML = '<h1 class="m-1 empty-text">Empty Book Store. Click the button to add books!</h1>';
     document
       .querySelector(this.uiSelectors.tableContainer)
       .insertAdjacentElement('beforeend', div);
@@ -164,7 +162,7 @@ class Book {
 
   hideEmptyBookStoreMessage() {
     const UIEmptyDSText = document.querySelector(
-      this.uiSelectors.emptyDataStore
+      this.uiSelectors.emptyDataStore,
     );
     UIEmptyDSText.parentElement.remove();
   }
@@ -194,8 +192,7 @@ class Book {
   };
 
   toggleAddUpdateBtn = () => {
-    document.querySelector(this.uiSelectors.addUpdateBtn).textContent =
-      'Update Book';
+    document.querySelector(this.uiSelectors.addUpdateBtn).textContent = 'Update Book';
   };
 
   addCurrentBookToForm = () => {
@@ -203,8 +200,7 @@ class Book {
     document.querySelector(this.uiSelectors.txtBookAuthor).value = book.author;
     document.querySelector(this.uiSelectors.txtBookTitle).value = book.title;
     document.querySelector(this.uiSelectors.numBookPages).value = book.pages;
-    document.querySelector(this.uiSelectors.chkBookStatus).checked =
-      book.status;
+    document.querySelector(this.uiSelectors.chkBookStatus).checked = book.status;
   };
 
   resetUI = () => {
@@ -226,9 +222,9 @@ class Book {
       const bookInput = this.getBookInput();
 
       if (
-        bookInput.author === '' ||
-        bookInput.title === '' ||
-        bookInput.pages === ''
+        bookInput.author === ''
+        || bookInput.title === ''
+        || bookInput.pages === ''
       ) {
         return;
       }
@@ -298,7 +294,7 @@ class Book {
       }
 
       const formContainer = document.querySelector(
-        this.uiSelectors.frmContainer
+        this.uiSelectors.frmContainer,
       );
 
       if (formContainer.classList.contains('hidden')) {
@@ -321,7 +317,7 @@ class Book {
         this.populateBooks([]);
         this.hideTable();
         const emptyDataStore = document.querySelector(
-          this.uiSelectors.emptyDataStore
+          this.uiSelectors.emptyDataStore,
         );
 
         if (!emptyDataStore) {
@@ -384,7 +380,6 @@ class Book {
 
   updateItemStorage(updatedItem) {
     const bookItems = JSON.parse(localStorage.getItem(this.localStorageKey));
-    console.log(updatedItem);
     bookItems.forEach((book, index) => {
       if (book.id === updatedItem.id) {
         bookItems.splice(index, 1, updatedItem);
@@ -434,7 +429,9 @@ class Book {
     return this.data.booksCatalog;
   }
 
-  addBook({ author, title, pages, status }) {
+  addBook({
+    author, title, pages, status,
+  }) {
     let id;
     if (this.data.books.length > 0) {
       id = this.data.books[this.data.books.length - 1].id;
@@ -456,7 +453,9 @@ class Book {
     return this.book;
   }
 
-  updateBook({ author, title, pages, status }) {
+  updateBook({
+    author, title, pages, status,
+  }) {
     pages = parseInt(pages, 10);
 
     const bookToUpdate = this.data.currentBook;
