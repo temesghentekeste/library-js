@@ -1,9 +1,8 @@
 // Storage Controller
-const StorageCtrl = (function () {
+const StorageCtrl = (() => {
   const localStorageKey = 'bookItems';
   return {
     storeItem(item) {
-      console.log('called');
       let bookItems;
 
       if (localStorage.getItem(localStorageKey) === null) {
@@ -28,7 +27,6 @@ const StorageCtrl = (function () {
 
     updateItemStorage(updatedItem) {
       const bookItems = JSON.parse(localStorage.getItem(localStorageKey));
-      console.log('updating');
       bookItems.forEach((meal, index) => {
         if (meal.id === updatedItem.id) {
           bookItems.splice(index, 1, updatedItem);
@@ -46,6 +44,10 @@ const StorageCtrl = (function () {
         }
       });
       localStorage.setItem(localStorageKey, JSON.stringify(bookItems));
+    },
+
+    removeItemsFromStorage() {
+      localStorage.removeItem(localStorageKey);
     },
   };
 })();
@@ -155,6 +157,15 @@ const BookCtrl = (() => {
       data.books = data.books.filter((b) => b.id !== book.id);
     },
 
+    clearAllItems() {
+      data.books = [];
+      data.currentBook = null;
+      data.totalBooks = 0;
+      data.totalUnRead = 0;
+      data.totalRead = 0;
+      data.mode = 'insert';
+    },
+
     parseId(id) {
       const arrId = id.split('-');
       return parseInt(arrId[1], 10);
@@ -177,7 +188,7 @@ const UICtrl = (() => {
     tableContainer: '.library-container',
     emptyDataStore: '.empty-text',
     mainHeader: 'header',
-    mainHeader: 'header',
+    clearAll: '.clear-all',
   };
 
   const populateBooks = (books) => {
@@ -259,7 +270,7 @@ const UICtrl = (() => {
   const updateBookRow = (book) => {
     const { id } = book;
     const tableRow = UISelectors.tableBody;
-    row = document.querySelector(`${tableRow} #item-${id}`);
+    const row = document.querySelector(`${tableRow} #item-${id}`);
     const html = `
         <tr class="book" id="item-${book.id}">
           <td>${book.author}</td>
@@ -352,6 +363,12 @@ const UICtrl = (() => {
     clearInput();
   };
 
+  const removeItems = () => {
+    let bookItems = document.querySelectorAll(UISelectors.table);
+    bookItems = Array.from(bookItems);
+    bookItems.forEach((listItem) => listItem.remove());
+  };
+
   const getSelectors = () => UISelectors;
   return {
     populateBooks,
@@ -372,6 +389,7 @@ const UICtrl = (() => {
     updateBookRow,
     deleteBookRow,
     resetUI,
+    removeItems,
   };
 })();
 
@@ -471,6 +489,27 @@ const App = ((BookCtrl, UICtrl) => {
     };
 
     document
+      .querySelector(UISelectors.clearAll)
+      .addEventListener('click', (e) => {
+        e.preventDefault();
+        BookCtrl.clearAllItems();
+
+        UICtrl.resetUI();
+
+        UICtrl.populateBooks([]);
+        UICtrl.hideTable();
+        const emptyDataStore = document.querySelector(
+          UISelectors.emptyDataStore
+        );
+
+        if (!emptyDataStore) {
+          UICtrl.displayEmptyBookStoreMessage();
+        }
+
+        StorageCtrl.removeItemsFromStorage();
+      });
+
+    document
       .querySelector(UISelectors.addUpdateBtn)
       .addEventListener('click', addBookSubmit);
 
@@ -489,7 +528,7 @@ const App = ((BookCtrl, UICtrl) => {
     const books = BookCtrl.getBooks();
     if (books.length > 0) {
       UICtrl.populateBooks(books);
-      
+
       UICtrl.displayTable();
     } else {
       UICtrl.hideTable();
