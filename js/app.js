@@ -99,7 +99,9 @@ const BookCtrl = (() => {
       return data.booksCatalog;
     },
 
-    addBook({ author, title, pages, status }) {
+    addBook({
+      author, title, pages, status,
+    }) {
       let id;
       if (data.books.length > 0) {
         id = data.books[data.books.length - 1].id;
@@ -115,7 +117,9 @@ const BookCtrl = (() => {
       return newBook;
     },
 
-    updateBook({ author, title, pages, status }) {
+    updateBook({
+      author, title, pages, status,
+    }) {
       pages = parseInt(pages, 10);
 
       const bookToUpdate = data.currentBook;
@@ -307,8 +311,7 @@ const UICtrl = (() => {
 
   const displayEmptyBookStoreMessage = () => {
     const div = document.createElement('div');
-    div.innerHTML =
-      '<h1 class="m-1 empty-text">Empty Book Store. Click the button to add books!</h1>';
+    div.innerHTML = '<h1 class="m-1 empty-text">Empty Book Store. Click the button to add books!</h1>';
     document
       .querySelector(UISelectors.tableContainer)
       .insertAdjacentElement('beforeend', div);
@@ -345,8 +348,7 @@ const UICtrl = (() => {
   };
 
   const toggleAddUpdateBtn = () => {
-    document.querySelector(UISelectors.addUpdateBtn).textContent =
-      'Update Book';
+    document.querySelector(UISelectors.addUpdateBtn).textContent = 'Update Book';
   };
 
   const addCurrentBookToForm = () => {
@@ -405,9 +407,9 @@ const App = ((BookCtrl, UICtrl) => {
       const bookInput = UICtrl.getBookInput();
 
       if (
-        bookInput.author === '' ||
-        bookInput.title === '' ||
-        bookInput.pages === ''
+        bookInput.author === ''
+        || bookInput.title === ''
+        || bookInput.pages === ''
       ) {
         return;
       }
@@ -499,7 +501,7 @@ const App = ((BookCtrl, UICtrl) => {
         UICtrl.populateBooks([]);
         UICtrl.hideTable();
         const emptyDataStore = document.querySelector(
-          UISelectors.emptyDataStore
+          UISelectors.emptyDataStore,
         );
 
         if (!emptyDataStore) {
