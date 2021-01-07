@@ -259,6 +259,11 @@ button {
   user-select: none;
 }
 
+.clear-all {
+  margin-left: auto;
+  margin-top: -1rem;
+}
+
 .switch-label::before,
 .switch-label::after {
   content: "";

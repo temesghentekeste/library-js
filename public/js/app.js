@@ -1,133 +1,339 @@
-const UITextTitle = document.querySelector('.txt-title');
-const UINumPages = document.querySelector('.num-pages');
-const UIChKStatus = document.querySelector('.chk-status');
-const UITableBody = document.querySelector('.table-body');
-const UIBtnAddBook = document.querySelector('.btn-add-book');
-const UIBtnToggleForm = document.querySelector('.btn-show-form');
-const UIFormContainer = document.querySelector('.form-popup');
-const UITableBooks = document.querySelector('#books');
-const UIBooksContainer = document.querySelector('.library-container');
-const UIHeader = document.querySelector('header');
-const UITextAuthour = document.querySelector('.txt-author');
+// Storage Controller
+const StorageCtrl = (() => {
+  const localStorageKey = 'bookItems';
+  return {
+    storeItem(item) {
+      let bookItems;
 
-const localStorageItem = 'myBooksLibrary';
-let bookStatus = false;
-let isBookToUpdate = false;
-let currentBook;
-const tableRowsSelector = '#books tbody';
-let booksCatalog = {};
+      if (localStorage.getItem(localStorageKey) === null) {
+        bookItems = [];
+        bookItems.push(item);
+      } else {
+        bookItems = JSON.parse(localStorage.getItem(localStorageKey));
+        bookItems.push(item);
+      }
+      localStorage.setItem(localStorageKey, JSON.stringify(bookItems));
+    },
 
-function Book(author, title, pages, status) {
-  this.author = author;
-  this.title = title;
-  this.pages = pages;
-  this.status = status;
-}
+    getItemsFromStorage() {
+      let bookItems;
+      if (localStorage.getItem(localStorageKey) === null) {
+        bookItems = [];
+      } else {
+        bookItems = JSON.parse(localStorage.getItem(localStorageKey));
+      }
+      return bookItems;
+    },
 
-const getBooks = () => (localStorage.getItem(localStorageItem)
-  ? JSON.parse(localStorage.getItem(localStorageItem))
-  : []);
+    updateItemStorage(updatedItem) {
+      const bookItems = JSON.parse(localStorage.getItem(localStorageKey));
+      bookItems.forEach((meal, index) => {
+        if (meal.id === updatedItem.id) {
+          bookItems.splice(index, 1, updatedItem);
+        }
+      });
 
-function saveBookLS(book) {
-  let myBooksLibrary;
-  if (localStorage.getItem(localStorageItem)) {
-    myBooksLibrary = JSON.parse(localStorage.getItem(localStorageItem));
-  } else {
-    myBooksLibrary = [];
+      localStorage.setItem(localStorageKey, JSON.stringify(bookItems));
+    },
+
+    deleteItemFromStorage(id) {
+      const bookItems = JSON.parse(localStorage.getItem(localStorageKey));
+      bookItems.forEach((item, index) => {
+        if (item.id === id) {
+          bookItems.splice(index, 1);
+        }
+      });
+      localStorage.setItem(localStorageKey, JSON.stringify(bookItems));
+    },
+
+    removeItemsFromStorage() {
+      localStorage.removeItem(localStorageKey);
+    },
+  };
+})();
+
+// Item Controller
+const BookCtrl = (() => {
+  function Book(id, author, title, pages, status) {
+    this.id = id;
+    this.author = author;
+    this.title = title;
+    this.pages = pages;
+    this.status = status;
   }
 
-  myBooksLibrary.push(book);
-  localStorage.setItem('myBooksLibrary', JSON.stringify(myBooksLibrary));
-}
-const parseId = (id) => {
-  const arrId = id.split('-');
-  return parseInt(arrId[1], 10);
-};
+  // DS / State
+  const data = {
+    books: StorageCtrl.getItemsFromStorage(),
+    currentBook: null,
+    totalBooks: 0,
+    totalUnRead: 0,
+    totalRead: 0,
+    mode: 'insert',
+  };
 
-function setCurrentBook(selectedBook) {
-  let id = selectedBook.getAttribute('id');
-  if (id === null) {
-    return;
-  }
-  id = parseId(id);
-  const books = getBooks();
-  currentBook = books.find((b) => b.id === id);
-}
+  return {
+    getBooks() {
+      return data.books;
+    },
 
-const deleteBookLS = (book) => {
-  let books = getBooks();
-  books = books.filter((b) => b.id !== book.id);
-  localStorage.setItem(localStorageItem, JSON.stringify(books));
-};
+    getBookCatalog() {
+      const { books } = data;
+      const total = data.books.length;
+      let totalRead = 0;
+      let totalNotRead = 0;
 
-const updateLS = () => {
-  const books = getBooks();
+      books.forEach((b) => {
+        if (b.status === true) totalRead += 1;
+        else totalNotRead += 1;
+      });
 
-  books.forEach((b, index) => {
-    if (b.id === currentBook.id) {
-      books.splice(index, 1, currentBook);
+      const booksCatalog = {
+        total,
+        read: totalRead,
+        notRead: totalNotRead,
+      };
+
+      data.booksCatalog = booksCatalog;
+
+      return data.booksCatalog;
+    },
+
+    addBook({
+      author, title, pages, status,
+    }) {
+      let id;
+      if (data.books.length > 0) {
+        id = data.books[data.books.length - 1].id;
+        id += 1;
+      } else {
+        id = 1;
+      }
+
+      pages = parseInt(pages, 10);
+
+      const newBook = new Book(id, author, title, pages, status);
+      data.books.push(newBook);
+      return newBook;
+    },
+
+    updateBook({
+      author, title, pages, status,
+    }) {
+      pages = parseInt(pages, 10);
+
+      const bookToUpdate = data.currentBook;
+      bookToUpdate.author = author;
+      bookToUpdate.title = title;
+      bookToUpdate.pages = pages;
+      bookToUpdate.status = status;
+
+      data.books.forEach((book, index) => {
+        if (book.id === bookToUpdate.id) {
+          data.books.splice(index, 1, bookToUpdate);
+        }
+      });
+      return bookToUpdate;
+    },
+
+    getBookById(id) {
+      const found = data.books.find((item) => item.id === id);
+      return found;
+    },
+
+    setCurrentBook(book) {
+      data.currentBook = book;
+    },
+
+    getCurrentBook() {
+      return data.currentBook;
+    },
+
+    setCurrentBookMode(mode = 'update') {
+      data.mode = mode;
+    },
+
+    getCurrentBookMode() {
+      return data.mode;
+    },
+
+    deleteBook(book) {
+      data.books = data.books.filter((b) => b.id !== book.id);
+    },
+
+    clearAllItems() {
+      data.books = [];
+      data.currentBook = null;
+      data.totalBooks = 0;
+      data.totalUnRead = 0;
+      data.totalRead = 0;
+      data.mode = 'insert';
+    },
+
+    parseId(id) {
+      const arrId = id.split('-');
+      return parseInt(arrId[1], 10);
+    },
+  };
+})();
+
+// UI Controller
+const UICtrl = (() => {
+  const UISelectors = {
+    tableBody: '.table-body',
+    addUpdateBtn: '.btn-add-book',
+    toggleFromBtn: '.btn-show-form',
+    frmContainer: '.form-popup',
+    txtBookAuthor: '.txt-author',
+    txtBookTitle: '.txt-title',
+    numBookPages: '.num-pages',
+    chkBookStatus: '.chk-status',
+    table: '#books',
+    tableContainer: '.library-container',
+    emptyDataStore: '.empty-text',
+    mainHeader: 'header',
+    clearAll: '.clear-all',
+  };
+
+  const populateBooks = (books) => {
+    let html = '';
+
+    books.forEach((book) => {
+      html += `
+        <tr class="book" id="item-${book.id}">
+          <td>${book.author}</td>
+          <td>${book.title}</td>
+          <td>${book.pages}</td>
+          <td>${book.status ? 'Read' : 'Not Read'}</td>
+          <td><button class="trash-btn"><i class="fas fa-trash"></i></button> 
+          <button class="edit-btn"><i class="fas fa-edit"></i></button>
+          </td>
+        </tr>
+      `;
+    });
+
+    document.querySelector(UISelectors.tableBody).innerHTML = html;
+  };
+
+  const toggleForm = () => {
+    document.querySelector(UISelectors.frmContainer).classList.toggle('hidden');
+  };
+
+  const displayFormContainer = () => {
+    document.querySelector(UISelectors.frmContainer).classList.remove('hidden');
+  };
+
+  const toggleMinMaxIcon = (isHidden) => {
+    const toggler = document.querySelector(UISelectors.toggleFromBtn);
+    if (isHidden) {
+      toggler.innerHTML = '<i class="fas fa-plus-square min-max-icon"></i>';
+    } else {
+      toggler.innerHTML = '<i class="fas fa-minus-square min-max-icon"></i>';
     }
-  });
+  };
 
-  localStorage.setItem(localStorageItem, JSON.stringify(books));
-};
+  const addBookRow = (newBook) => {
+    const bookRow = document.createElement('tr');
+    bookRow.classList.add('book');
 
+    bookRow.setAttribute('id', `item-${newBook.id}`);
 
-const getHTML = () => {
-  currentBook.author = UITextAuthour.value.trim();
-  currentBook.title = UITextTitle.value.trim();
-  currentBook.pages = UINumPages.value;
-  currentBook.status = bookStatus;
-  const html = `
-    <tr class="book" id="item-${currentBook.id}">
-      <td>${currentBook.author}</td>
-      <td>${currentBook.title}</td>
-      <td>${currentBook.pages}</td>
-      <td>${bookStatus ? 'Read' : 'Not Read'}</td>
-      <td><button class="trash-btn"><i class="fas fa-trash"></i></button> 
-      <button class="edit-btn"><i class="fas fa-edit"></i></button>
-      </td>
-    </tr>
-  `;
-  return html;
-};
-const toggleMinMaxIcon = () => {
-  if (UIFormContainer.classList.contains('hidden')) {
-    UIBtnToggleForm.innerHTML = '<i class="fas fa-plus-square min-max-icon"></i>';
-  } else {
-    UIBtnToggleForm.innerHTML = '<i class="fas fa-minus-square min-max-icon"></i>';
-  }
-};
-const toggleEmptyMessage = (isEmpty) => {
-  const UIEmptyMsg = document.querySelector('.empty-text');
-  if (isEmpty) {
-    if (UIEmptyMsg !== null) UIEmptyMsg.parentElement.remove();
+    const newBookAuthor = document.createElement('td');
+    newBookAuthor.innerText = newBook.author;
+    bookRow.appendChild(newBookAuthor);
 
+    const newBookTitle = document.createElement('td');
+    newBookTitle.innerText = newBook.title;
+    bookRow.appendChild(newBookTitle);
+
+    const newBookPages = document.createElement('td');
+    newBookPages.innerText = newBook.pages;
+    bookRow.appendChild(newBookPages);
+
+    const newBookStatus = document.createElement('td');
+    newBookStatus.innerHTML = `${newBook.status ? 'Read' : 'Not Read'}`;
+    bookRow.appendChild(newBookStatus);
+
+    const newBookActions = document.createElement('td');
+    const deleteBook = document.createElement('button');
+    deleteBook.innerHTML = '<i class="fas fa-trash"></i>';
+    deleteBook.classList.add('trash-btn');
+    newBookActions.appendChild(deleteBook);
+
+    const editBook = document.createElement('button');
+    editBook.innerHTML = '<i class="fas fa-edit"></i>';
+    editBook.classList.add('edit-btn');
+    newBookActions.appendChild(editBook);
+    bookRow.appendChild(newBookActions);
+
+    document
+      .querySelector(UISelectors.tableBody)
+      .insertAdjacentElement('beforeend', bookRow);
+  };
+
+  const updateBookRow = (book) => {
+    const { id } = book;
+    const tableRow = UISelectors.tableBody;
+    const row = document.querySelector(`${tableRow} #item-${id}`);
+    const html = `
+        <tr class="book" id="item-${book.id}">
+          <td>${book.author}</td>
+          <td>${book.title}</td>
+          <td>${book.pages}</td>
+          <td>${book.status ? 'Read' : 'Not Read'}</td>
+          <td><button class="trash-btn"><i class="fas fa-trash"></i></button> 
+          <button class="edit-btn"><i class="fas fa-edit"></i></button>
+          </td>
+        </tr>
+      `;
+    row.innerHTML = html;
+  };
+
+  const deleteBookRow = (bookRow) => {
+    bookRow.remove();
+  };
+
+  const clearInput = () => {
+    document.querySelector(UISelectors.txtBookAuthor).value = '';
+    document.querySelector(UISelectors.txtBookTitle).value = '';
+    document.querySelector(UISelectors.numBookPages).value = '';
+    document.querySelector(UISelectors.chkBookStatus).checked = false;
+    document.querySelector(UISelectors.addUpdateBtn).innerText = 'Add New Book';
+  };
+
+  const hideTable = () => {
+    document.querySelector(UISelectors.table).classList.add('hidden');
+  };
+
+  const displayTable = () => {
+    document.querySelector(UISelectors.table).classList.remove('hidden');
+  };
+
+  const displayEmptyBookStoreMessage = () => {
     const div = document.createElement('div');
     div.innerHTML = '<h1 class="m-1 empty-text">Empty Book Store. Click the button to add books!</h1>';
-    UIBooksContainer.insertAdjacentElement('beforeend', div);
-  } else if (UIEmptyMsg !== null) UIEmptyMsg.parentElement.remove();
-};
+    document
+      .querySelector(UISelectors.tableContainer)
+      .insertAdjacentElement('beforeend', div);
+  };
 
+  const hideEmptyBookStoreMessage = () => {
+    const UIEmptyDSText = document.querySelector(UISelectors.emptyDataStore);
 
-const renderBooksCatalog = (books) => {
-  const total = books.length;
-  let totalRead = 0;
-  let totoalNotRead = 0;
+    UIEmptyDSText.parentElement.remove();
+  };
 
-  books.forEach((b) => {
-    if (b.status === true) totalRead += 1;
-    else totoalNotRead += 1;
+  const getBookInput = () => ({
+    author: document.querySelector(UISelectors.txtBookAuthor).value,
+    title: document.querySelector(UISelectors.txtBookTitle).value,
+    pages: document.querySelector(UISelectors.numBookPages).value,
+    status: document.querySelector(UISelectors.chkBookStatus).checked,
   });
 
-  booksCatalog = {};
-  booksCatalog.total = total;
-  booksCatalog.read = totalRead;
-  booksCatalog.notRead = totoalNotRead;
-
-  const div = document.createElement('div');
-  div.classList.add('book-catalog');
-  const html = `
+  const displayBookCatalog = (booksCatalog) => {
+    const div = document.createElement('div');
+    div.classList.add('book-catalog');
+    const html = `
       <p class="book-catalog-title">Books Catalog</p>
       <div class="info">
       <p class="total">Total: <span>${booksCatalog.total}</span></p>
@@ -135,181 +341,207 @@ const renderBooksCatalog = (books) => {
       <p class="to-read">To be read: <span>${booksCatalog.notRead}</span></p>
       </div>
       `;
-  div.innerHTML = html;
-  UIHeader.insertAdjacentElement('beforeend', div);
-};
-const hideBooksTable = (style) => {
-  UITableBooks.classList.add(style);
-  toggleEmptyMessage(true);
-};
+    div.innerHTML = html;
+    document
+      .querySelector(UISelectors.mainHeader)
+      .insertAdjacentElement('beforeend', div);
+  };
 
-const render = (book) => {
-  const html = `
-    <tr class="book" id="item-${book.id}">
-      <td>${book.author}</td>
-      <td>${book.title}</td>
-      <td>${book.pages}</td>
-      <td>${book.status ? 'Read' : 'Not Read'}</td>
-      <td><button class="trash-btn"><i class="fas fa-trash"></i></button> 
-      <button class="edit-btn"><i class="fas fa-edit"></i></button>
-      </td>
-    </tr>
-  `;
+  const toggleAddUpdateBtn = () => {
+    document.querySelector(UISelectors.addUpdateBtn).textContent = 'Update Book';
+  };
 
-  UITableBody.innerHTML += html;
-};
+  const addCurrentBookToForm = () => {
+    const book = BookCtrl.getCurrentBook();
+    document.querySelector(UISelectors.txtBookAuthor).value = book.author;
+    document.querySelector(UISelectors.txtBookTitle).value = book.title;
+    document.querySelector(UISelectors.numBookPages).value = book.pages;
+    document.querySelector(UISelectors.chkBookStatus).checked = book.status;
+  };
 
-document.addEventListener('DOMContentLoaded', () => {
-  const books = getBooks();
-  renderBooksCatalog(books);
-  if (books.length === 0) {
-    hideBooksTable('hidden');
-  } else {
-    books.forEach((book) => {
-      render(book);
-    });
-  }
-});
+  const resetUI = () => {
+    const bookCatalog = BookCtrl.getBookCatalog();
+    displayBookCatalog(bookCatalog);
+    clearInput();
+  };
 
+  const removeItems = () => {
+    let bookItems = document.querySelectorAll(UISelectors.table);
+    bookItems = Array.from(bookItems);
+    bookItems.forEach((listItem) => listItem.remove());
+  };
 
-const resetForm = () => {
-  UITextAuthour.value = '';
-  UITextTitle.value = '';
-  UINumPages.value = 0;
-  UIChKStatus.checked = false;
-  isBookToUpdate = false;
-  UIBtnAddBook.textContent = 'Add New Book';
-  bookStatus = false;
-};
-const updateUI = (currentBook) => {
-  const { id } = currentBook;
-  const book = document.querySelector(`${tableRowsSelector} #item-${id}`);
-  const html = getHTML();
-  book.innerHTML = html;
-  resetForm();
-};
+  const getSelectors = () => UISelectors;
+  return {
+    populateBooks,
+    getSelectors,
+    toggleForm,
+    toggleMinMaxIcon,
+    getBookInput,
+    addBookRow,
+    clearInput,
+    hideTable,
+    displayTable,
+    displayEmptyBookStoreMessage,
+    hideEmptyBookStoreMessage,
+    displayBookCatalog,
+    toggleAddUpdateBtn,
+    addCurrentBookToForm,
+    displayFormContainer,
+    updateBookRow,
+    deleteBookRow,
+    resetUI,
+    removeItems,
+  };
+})();
 
+// App Controller
 
-function addBookToLibrary(e) {
-  e.preventDefault();
-  const author = UITextAuthour.value.trim();
-  const title = UITextTitle.value.trim();
-  const pages = UINumPages.value;
-  const status = bookStatus;
-  const newBook = new Book(author, title, pages, status);
+const App = ((BookCtrl, UICtrl) => {
+  const loadEventListeners = () => {
+    const UISelectors = UICtrl.getSelectors();
 
-  if (author === '' || title === '' || pages === '' || status === '') return;
-  if (isBookToUpdate === true) {
-    updateUI(currentBook);
-    bookStatus = currentBook.status;
-    updateLS();
-    renderBooksCatalog(getBooks());
-    resetForm();
-    return;
-  }
+    const addBookSubmit = (e) => {
+      e.preventDefault();
 
-  const bookRow = document.createElement('tr');
-  bookRow.classList.add('book');
+      const bookInput = UICtrl.getBookInput();
 
-  const books = getBooks();
-  let id;
-  if (books.length > 0) {
-    id = books[books.length - 1].id;
-    id += 1;
-  } else {
-    id = 1;
-  }
-  newBook.id = id;
-  bookRow.setAttribute('id', `item-${id}`);
-
-  const newBookAuthor = document.createElement('td');
-  newBookAuthor.innerText = newBook.author;
-  bookRow.appendChild(newBookAuthor);
-
-  const newBookTitle = document.createElement('td');
-  newBookTitle.innerText = newBook.title;
-  bookRow.appendChild(newBookTitle);
-
-  const newBookPages = document.createElement('td');
-  newBookPages.innerText = newBook.pages;
-  bookRow.appendChild(newBookPages);
-
-  const newBookStatus = document.createElement('td');
-  newBookStatus.innerHTML = `${newBook.status ? 'Read' : 'Not Read'}`;
-  bookRow.appendChild(newBookStatus);
-
-  const newBookActions = document.createElement('td');
-  const deleteBook = document.createElement('button');
-  deleteBook.innerHTML = '<i class="fas fa-trash"></i>';
-  deleteBook.classList.add('trash-btn');
-  newBookActions.appendChild(deleteBook);
-
-  const editBook = document.createElement('button');
-  editBook.innerHTML = '<i class="fas fa-edit"></i>';
-  editBook.classList.add('edit-btn');
-  newBookActions.appendChild(editBook);
-  bookRow.appendChild(newBookActions);
-
-  saveBookLS(newBook);
-  UITableBody.appendChild(bookRow);
-  UITableBooks.classList.remove('hidden');
-  toggleEmptyMessage(false);
-  renderBooksCatalog(getBooks());
-  resetForm();
-}
-
-function getStatus(event) {
-  if (event.target.checked) {
-    bookStatus = true;
-  } else {
-    bookStatus = false;
-  }
-
-  return bookStatus;
-}
-const displayCurrentBook = (book) => {
-  isBookToUpdate = true;
-  UIBtnAddBook.textContent = 'Update Book';
-  if (UIFormContainer.classList.contains('hidden')) {
-    UIFormContainer.classList.remove('hidden');
-  }
-  UITextAuthour.value = book.author;
-  UITextTitle.value = book.title;
-  UINumPages.value = book.pages;
-  UIChKStatus.checked = book.status;
-};
-
-function deleteEdit(e) {
-  const selectedItem = e.target;
-  const bookRow = selectedItem.parentElement.parentElement;
-  setCurrentBook(bookRow);
-
-  if (selectedItem.classList.contains('trash-btn')) {
-    bookRow.classList.add('fall');
-    bookRow.addEventListener('transitionend', () => {
-      bookRow.remove();
-      const books = getBooks();
-      if (books.length === 0) {
-        hideBooksTable('hidden');
+      if (
+        bookInput.author === ''
+        || bookInput.title === ''
+        || bookInput.pages === ''
+      ) {
+        return;
       }
-      resetForm();
-    });
-    deleteBookLS(currentBook);
-    renderBooksCatalog(getBooks());
-  } else if (selectedItem.classList.contains('edit-btn')) {
-    displayCurrentBook(currentBook);
-    toggleMinMaxIcon();
-    bookStatus = currentBook.status;
-  }
-}
 
+      const currentBookMode = BookCtrl.getCurrentBookMode();
 
-UIBtnToggleForm.addEventListener('click', () => {
-  UIFormContainer.classList.toggle('hidden');
-  toggleMinMaxIcon();
-});
+      if (currentBookMode === 'update') {
+        const updatedBook = BookCtrl.updateBook(bookInput);
+        StorageCtrl.updateItemStorage(bookInput);
+        UICtrl.updateBookRow(updatedBook);
 
+        BookCtrl.setCurrentBookMode('insert');
+        UICtrl.resetUI();
+        return;
+      }
 
-UIBtnAddBook.addEventListener('click', addBookToLibrary);
-UIChKStatus.addEventListener('change', getStatus);
-UITableBody.addEventListener('click', deleteEdit);
+      const newBook = BookCtrl.addBook(bookInput);
+      StorageCtrl.storeItem(newBook);
+      UICtrl.addBookRow(newBook);
+      const isEmptyDS = document.querySelector(UISelectors.emptyDataStore);
+
+      if (isEmptyDS) {
+        UICtrl.hideEmptyBookStoreMessage();
+        UICtrl.displayTable();
+      }
+      UICtrl.resetUI();
+    };
+
+    const toggleForm = (e) => {
+      e.preventDefault();
+      UICtrl.toggleForm();
+      const isHidden = document
+        .querySelector(UISelectors.frmContainer)
+        .classList.contains('hidden');
+      UICtrl.toggleMinMaxIcon(isHidden);
+    };
+
+    const deleteEditBook = (e) => {
+      const selectedBook = e.target;
+      const bookRow = selectedBook.parentElement.parentElement;
+      let id = bookRow.getAttribute('id');
+
+      if (id === null) {
+        return;
+      }
+
+      id = BookCtrl.parseId(id);
+      const currentBook = BookCtrl.getBookById(id);
+
+      // Set current item
+      BookCtrl.setCurrentBook(currentBook);
+      if (selectedBook.classList.contains('trash-btn')) {
+        BookCtrl.deleteBook(currentBook);
+        StorageCtrl.deleteItemFromStorage(currentBook.id);
+        UICtrl.deleteBookRow(bookRow);
+        const books = BookCtrl.getBooks();
+        if (books.length === 0) {
+          UICtrl.hideTable();
+          UICtrl.displayEmptyBookStoreMessage();
+        }
+
+        UICtrl.resetUI();
+        return;
+      }
+
+      if (!selectedBook.classList.contains('edit-btn')) {
+        return;
+      }
+
+      const formContainer = document.querySelector(UISelectors.frmContainer);
+
+      if (formContainer.classList.contains('hidden')) {
+        UICtrl.displayFormContainer();
+      }
+
+      UICtrl.toggleAddUpdateBtn();
+      UICtrl.addCurrentBookToForm();
+      BookCtrl.setCurrentBookMode('update');
+    };
+
+    document
+      .querySelector(UISelectors.clearAll)
+      .addEventListener('click', (e) => {
+        e.preventDefault();
+        BookCtrl.clearAllItems();
+
+        UICtrl.resetUI();
+
+        UICtrl.populateBooks([]);
+        UICtrl.hideTable();
+        const emptyDataStore = document.querySelector(
+          UISelectors.emptyDataStore,
+        );
+
+        if (!emptyDataStore) {
+          UICtrl.displayEmptyBookStoreMessage();
+        }
+
+        StorageCtrl.removeItemsFromStorage();
+      });
+
+    document
+      .querySelector(UISelectors.addUpdateBtn)
+      .addEventListener('click', addBookSubmit);
+
+    document
+      .querySelector(UISelectors.toggleFromBtn)
+      .addEventListener('click', toggleForm);
+
+    document
+      .querySelector(UISelectors.tableBody)
+      .addEventListener('click', deleteEditBook);
+  };
+
+  const init = () => {
+    loadEventListeners();
+
+    const books = BookCtrl.getBooks();
+    if (books.length > 0) {
+      UICtrl.populateBooks(books);
+
+      UICtrl.displayTable();
+    } else {
+      UICtrl.hideTable();
+      UICtrl.displayEmptyBookStoreMessage();
+    }
+    UICtrl.resetUI();
+  };
+
+  return {
+    init,
+  };
+})(BookCtrl, UICtrl);
+
+App.init();
