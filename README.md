@@ -40,7 +40,7 @@ Library JS is a JavaScript project that stores typical book attributes as book a
 ### Update Book
 ![screenshot](./images/screenshot_update.gif) 
 ### Sample Code
-![screenshot](./images/screenshot_code.gif) 
+![screenshot](./images/sc-module-pattern.gif) 
 
 ## 🔧 Built with<a name = "with"></a>
 

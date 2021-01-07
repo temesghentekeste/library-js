@@ -1,4 +1,3 @@
-// Storage Controller
 const StorageCtrl = (() => {
   const localStorageKey = 'bookItems';
   return {
@@ -52,7 +51,6 @@ const StorageCtrl = (() => {
   };
 })();
 
-// Item Controller
 const BookCtrl = (() => {
   function Book(id, author, title, pages, status) {
     this.id = id;
@@ -62,7 +60,6 @@ const BookCtrl = (() => {
     this.status = status;
   }
 
-  // DS / State
   const data = {
     books: StorageCtrl.getItemsFromStorage(),
     currentBook: null,
@@ -177,7 +174,6 @@ const BookCtrl = (() => {
   };
 })();
 
-// UI Controller
 const UICtrl = (() => {
   const UISelectors = {
     tableBody: '.table-body',
@@ -395,7 +391,6 @@ const UICtrl = (() => {
   };
 })();
 
-// App Controller
 
 const App = ((BookCtrl, UICtrl) => {
   const loadEventListeners = () => {
@@ -459,7 +454,6 @@ const App = ((BookCtrl, UICtrl) => {
       id = BookCtrl.parseId(id);
       const currentBook = BookCtrl.getBookById(id);
 
-      // Set current item
       BookCtrl.setCurrentBook(currentBook);
       if (selectedBook.classList.contains('trash-btn')) {
         BookCtrl.deleteBook(currentBook);
