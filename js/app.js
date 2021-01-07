@@ -1,4 +1,54 @@
 // Storage Controller
+const StorageCtrl = (function () {
+  const localStorageKey = 'bookItems';
+  return {
+    storeItem(item) {
+      console.log('called');
+      let bookItems;
+
+      if (localStorage.getItem(localStorageKey) === null) {
+        bookItems = [];
+        bookItems.push(item);
+      } else {
+        bookItems = JSON.parse(localStorage.getItem(localStorageKey));
+        bookItems.push(item);
+      }
+      localStorage.setItem(localStorageKey, JSON.stringify(bookItems));
+    },
+
+    getItemsFromStorage() {
+      let bookItems;
+      if (localStorage.getItem(localStorageKey) === null) {
+        bookItems = [];
+      } else {
+        bookItems = JSON.parse(localStorage.getItem(localStorageKey));
+      }
+      return bookItems;
+    },
+
+    updateItemStorage(updatedItem) {
+      const bookItems = JSON.parse(localStorage.getItem(localStorageKey));
+      console.log('updating');
+      bookItems.forEach((meal, index) => {
+        if (meal.id === updatedItem.id) {
+          bookItems.splice(index, 1, updatedItem);
+        }
+      });
+
+      localStorage.setItem(localStorageKey, JSON.stringify(bookItems));
+    },
+
+    deleteItemFromStorage(id) {
+      const bookItems = JSON.parse(localStorage.getItem(localStorageKey));
+      bookItems.forEach((item, index) => {
+        if (item.id === id) {
+          bookItems.splice(index, 1);
+        }
+      });
+      localStorage.setItem(localStorageKey, JSON.stringify(bookItems));
+    },
+  };
+})();
 
 // Item Controller
 const BookCtrl = (() => {
@@ -12,7 +62,7 @@ const BookCtrl = (() => {
 
   // DS / State
   const data = {
-    books: [],
+    books: StorageCtrl.getItemsFromStorage(),
     currentBook: null,
     totalBooks: 0,
     totalUnRead: 0,
@@ -348,6 +398,7 @@ const App = ((BookCtrl, UICtrl) => {
 
       if (currentBookMode === 'update') {
         const updatedBook = BookCtrl.updateBook(bookInput);
+        StorageCtrl.updateItemStorage(bookInput);
         UICtrl.updateBookRow(updatedBook);
 
         BookCtrl.setCurrentBookMode('insert');
@@ -356,6 +407,7 @@ const App = ((BookCtrl, UICtrl) => {
       }
 
       const newBook = BookCtrl.addBook(bookInput);
+      StorageCtrl.storeItem(newBook);
       UICtrl.addBookRow(newBook);
       const isEmptyDS = document.querySelector(UISelectors.emptyDataStore);
 
@@ -391,6 +443,7 @@ const App = ((BookCtrl, UICtrl) => {
       BookCtrl.setCurrentBook(currentBook);
       if (selectedBook.classList.contains('trash-btn')) {
         BookCtrl.deleteBook(currentBook);
+        StorageCtrl.deleteItemFromStorage(currentBook.id);
         UICtrl.deleteBookRow(bookRow);
         const books = BookCtrl.getBooks();
         if (books.length === 0) {
@@ -432,10 +485,11 @@ const App = ((BookCtrl, UICtrl) => {
 
   const init = () => {
     loadEventListeners();
-    
+
     const books = BookCtrl.getBooks();
     if (books.length > 0) {
-      UICtrl.populateBooks();
+      UICtrl.populateBooks(books);
+      
       UICtrl.displayTable();
     } else {
       UICtrl.hideTable();
