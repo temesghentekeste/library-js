@@ -18,7 +18,7 @@
 
 ## About <a name = "about"></a>
 
-Library JS is a JavaScript project that stores typical book attributes as book author, book title, number of pages and whether a book is read or not by the end user. It has two versions of two goals. The goal of the first version is to showcase DOM Manipulation and Objects and Object constructors; and of the second is to refactor the codebase using the popular JavaScript pattern, the module pattern. To persist the data local storage is used.
+Library JS is a JavaScript project that stores typical book attributes as book author, book title, number of pages and whether a book is read or not by the end user. It has three versions of three goals each of which developed in a separate branch. The goal of the first version (feature/library-logic branch) is to showcase DOM Manipulation and Objects and Object constructors; and of the second is to refactor the codebase using the popular JavaScript pattern, the module pattern, and it is developed inside feature/library-module-pattern branch . The purpose of third is to refactor the codebase using ES6 classes. Each branch uses localStorage to persist the data.
 
 <h3>Description <a name = "description"></a></h3>
 <h4>This project allows a user to:</h4>
@@ -40,7 +40,7 @@ Library JS is a JavaScript project that stores typical book attributes as book a
 ### Update Book
 ![screenshot](./images/screenshot_update.gif) 
 ### Sample Code
-![screenshot](./images/sc-module-pattern.gif) 
+![screenshot](./images/sc-es6-classes.gif) 
 
 ## 🔧 Built with<a name = "with"></a>
 
