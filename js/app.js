@@ -237,7 +237,7 @@ class Book {
 
       if (currentBookMode === 'update') {
         const updatedBook = this.updateBook(bookInput);
-        this.updateItemStorage(bookInput);
+        this.updateItemStorage(updatedBook);
         this.updateBookRow(updatedBook);
 
         this.setCurrentBookMode('insert');
@@ -515,4 +515,3 @@ class Book {
 
 const bookApp = new Book();
 bookApp.init();
-console.log('Starting');
