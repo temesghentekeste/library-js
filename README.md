@@ -18,13 +18,14 @@
 
 ## About <a name = "about"></a>
 
-Library JS is a JavaScript project that stores typical book attributes as book author, book title, number of pages and whether a book is read or to be read by the end user. The goal is to showcase such JavaScript features as DOM Manipulation and Objects and Object constructors. Local storage is used to persist the data.
+Library JS is a JavaScript project that stores typical book attributes as book author, book title, number of pages and whether a book is read or not by the end user. It has two versions of two goals. The goal of the first version is to showcase DOM Manipulation and Objects and Object constructors; and of the second is to refactor the codebase using the popular JavaScript pattern, the module pattern. To persist the data local storage is used.
 
 <h3>Description <a name = "description"></a></h3>
 <h4>This project allows a user to:</h4>
 <li>Create a book item</li>
 <li>Update a book item</li>
 <li>Delete a book item</li>
+<li>Clear all book items</li>
 <li>Persist book items using browser's localStorage</li>
 <li>Show simple catalog of all the books in the localStorage</li>
 
