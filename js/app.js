@@ -26,8 +26,8 @@ const StorageCtrl = (() => {
 
     updateItemStorage(updatedItem) {
       const bookItems = JSON.parse(localStorage.getItem(localStorageKey));
-      bookItems.forEach((meal, index) => {
-        if (meal.id === updatedItem.id) {
+      bookItems.forEach((book, index) => {
+        if (book.id === updatedItem.id) {
           bookItems.splice(index, 1, updatedItem);
         }
       });
@@ -410,7 +410,7 @@ const App = ((BookCtrl, UICtrl) => {
 
       if (currentBookMode === 'update') {
         const updatedBook = BookCtrl.updateBook(bookInput);
-        StorageCtrl.updateItemStorage(bookInput);
+        StorageCtrl.updateItemStorage(updatedBook);
         UICtrl.updateBookRow(updatedBook);
 
         BookCtrl.setCurrentBookMode('insert');
